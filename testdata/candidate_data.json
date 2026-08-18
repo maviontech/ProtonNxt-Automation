@@ -1,0 +1,46 @@
+{
+  "candidate_management": {
+    "module_details": {
+      "module_name": "Candidate Management",
+      "navigation_path": "",
+      "page_url": "",
+      "page_loaded_indicator": ""
+    },
+    "search_candidate": {
+      "candidate_name": "",
+      "candidate_id": "",
+      "email": ""
+    },
+    "create_candidate": {
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "phone": "",
+      "job_title": "",
+      "source": "",
+      "status": "",
+      "owner": ""
+    },
+    "update_candidate": {
+      "candidate_name": "",
+      "field_name": "",
+      "old_value": "",
+      "new_value": ""
+    },
+    "validation_case": {
+      "field_name": "",
+      "invalid_value": "",
+      "expected_message": ""
+    },
+    "expected_results": {
+      "page_title": "",
+      "grid_header": "",
+      "success_message": ""
+    },
+    "test_prerequisites": {
+      "creation_allowed_in_test_env": "",
+      "update_allowed_in_test_env": "",
+      "approved_test_record_available": ""
+    }
+  }
+}

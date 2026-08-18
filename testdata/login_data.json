@@ -1,0 +1,13 @@
+{
+  "base_url": "http://127.0.0.1:8000/",
+  "valid_login": {
+    "company_code": "MAV123",
+    "username": "admin@mavion.com",
+    "password": "Maviontech@123"
+  },
+  "invalid_login": {
+    "company_code": "INVALID",
+    "username": "invalid@example.com",
+    "password": "invalid_password"
+  }
+}
