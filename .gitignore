@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Pytest
+.pytest_cache/
+
+# Virtual environment
+venv/
+.venv/
+
+# Selenium
+screenshots/
+
+# Test reports
+reports/
+
+# VS Code
+.vscode/
+
+# Environment variables
+.env
+
+.pytest_cache/
+__pycache__/
+*.pyc
+venv/
+.venv/
+.vscode/
+.env
