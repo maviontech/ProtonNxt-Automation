@@ -1,0 +1,10 @@
+{
+  "module": "Manage Members",
+  "page_path": "/teams/manage_members/",
+  "expected_headers": ["#", "MEMBER NAME", "EMAIL", "ROLE", "STATUS", "ACTION"],
+  "member_search": {
+    "name_query": "Admin User",
+    "email_query": "admin@mavion.com"
+  },
+  "global_search_query": "Teams"
+}

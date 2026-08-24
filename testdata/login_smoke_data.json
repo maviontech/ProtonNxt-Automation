@@ -1,0 +1,24 @@
+{
+  "module": "Login Smoke",
+  "smoke_cases": {
+    "LSM-001": {
+      "notes": "Application opens successfully and login page critical controls are visible.",
+      "expected_elements": [
+        "login_page",
+        "company_code",
+        "username",
+        "password",
+        "remember_me",
+        "login_button"
+      ]
+    },
+    "LSM-002": {
+      "notes": "Basic login functionality works with valid credentials.",
+      "expected_destination": "dashboard"
+    },
+    "LSM-003": {
+      "notes": "Basic logout functionality works after a successful login.",
+      "expected_post_logout_destination": "authentication_screen"
+    }
+  }
+}

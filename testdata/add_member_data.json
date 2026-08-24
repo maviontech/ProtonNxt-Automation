@@ -1,0 +1,138 @@
+{
+  "module": "Add Team Member",
+  "page_path": "/teams/add-member/",
+  "status_options": [
+    {
+      "value": "active",
+      "label": "Active"
+    },
+    {
+      "value": "inactive",
+      "label": "Inactive"
+    },
+    {
+      "value": "on_leave",
+      "label": "On Leave"
+    }
+  ],
+  "test_cases": {
+    "ATM-001": {
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "phone": "",
+      "role": "",
+      "date_joined": "",
+      "status": "active",
+      "notes": "Form load and empty-state verification."
+    },
+    "ATM-002": {
+      "first_name": "Ava",
+      "last_name": "Sharma",
+      "email": "__UNIQUE__",
+      "phone": "9876543210",
+      "role": "HR Specialist",
+      "date_joined": "__TODAY__",
+      "status": "active"
+    },
+    "ATM-003": {
+      "first_name": "",
+      "last_name": "Sharma",
+      "email": "__UNIQUE__",
+      "phone": "9876543210",
+      "role": "HR Specialist",
+      "date_joined": "__TODAY__",
+      "status": "active"
+    },
+    "ATM-004": {
+      "first_name": "Ava",
+      "last_name": "",
+      "email": "__UNIQUE__",
+      "phone": "9876543210",
+      "role": "HR Specialist",
+      "date_joined": "__TODAY__",
+      "status": "active"
+    },
+    "ATM-005": {
+      "first_name": "Ava",
+      "last_name": "Sharma",
+      "email": "",
+      "phone": "9876543210",
+      "role": "HR Specialist",
+      "date_joined": "__TODAY__",
+      "status": "active"
+    },
+    "ATM-006": {
+      "first_name": "Ava",
+      "last_name": "Sharma",
+      "email": "invalid-email",
+      "phone": "9876543210",
+      "role": "HR Specialist",
+      "date_joined": "__TODAY__",
+      "status": "active"
+    },
+    "ATM-007": {
+      "first_name": "Ava",
+      "last_name": "Sharma",
+      "email": "__UNIQUE__",
+      "phone": "abc123",
+      "role": "HR Specialist",
+      "date_joined": "__TODAY__",
+      "status": "active"
+    },
+    "ATM-008": {
+      "first_name": "Ava",
+      "last_name": "Sharma",
+      "email": "__UNIQUE__",
+      "phone": "",
+      "role": "",
+      "date_joined": "__TODAY__",
+      "status": "active"
+    },
+    "ATM-009": {
+      "first_name": "Ava",
+      "last_name": "Sharma",
+      "email": "__UNIQUE__",
+      "phone": "",
+      "role": "Recruitment Lead",
+      "date_joined": "",
+      "status": "active"
+    },
+    "ATM-010": {
+      "first_name": "Ava",
+      "last_name": "Sharma",
+      "email": "__UNIQUE__",
+      "phone": "",
+      "role": "Recruitment Lead",
+      "date_joined": "2019-12-31",
+      "status": "active"
+    },
+    "ATM-011": {
+      "first_name": "Ava",
+      "last_name": "Sharma",
+      "email": "__UNIQUE__",
+      "phone": "",
+      "role": "Recruitment Lead",
+      "date_joined": "2099-01-01",
+      "status": "active"
+    },
+    "ATM-012": {
+      "first_name": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "last_name": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB",
+      "email": "__UNIQUE__",
+      "phone": "+91 98765 43210",
+      "role": "Talent Acquisition Partner",
+      "date_joined": "__TODAY__",
+      "status": "inactive"
+    },
+    "ATM-013": {
+      "first_name": "  Ava  ",
+      "last_name": "  Sharma  ",
+      "email": "__UNIQUE__",
+      "phone": "9876543210",
+      "role": "  HR Specialist  ",
+      "date_joined": "__TODAY__",
+      "status": "on_leave"
+    }
+  }
+}

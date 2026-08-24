@@ -1,0 +1,34 @@
+{
+  "module": "Manage Members Smoke",
+  "page_path": "/teams/manage_members/",
+  "smoke_cases": {
+    "MMS-001": {
+      "notes": "Application open, login, navigation, and Manage Members page load verification.",
+      "expected_elements": [
+        "login_page",
+        "company_code",
+        "username",
+        "password",
+        "login_button",
+        "manage_members_page",
+        "member_table"
+      ],
+      "expected_headers": ["#", "MEMBER NAME", "EMAIL", "ROLE", "STATUS", "ACTION"]
+    },
+    "MMS-002": {
+      "notes": "Important Manage Members controls are visible and clickable.",
+      "member_search_query": "Admin User",
+      "global_search_query": "Teams",
+      "expected_controls": [
+        "member_search",
+        "global_search",
+        "list_view_button",
+        "cards_view_button"
+      ]
+    },
+    "MMS-003": {
+      "notes": "Critical list/search functionality works without blocking errors.",
+      "email_search_query": "admin@mavion.com"
+    }
+  }
+}

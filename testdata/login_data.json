@@ -5,9 +5,164 @@
     "username": "admin@mavion.com",
     "password": "Maviontech@123"
   },
-  "invalid_login": {
-    "company_code": "INVALID",
-    "username": "invalid@example.com",
-    "password": "invalid_password"
+  "login_page_suite_data": {
+    "application": "ProtonNxt",
+    "module": "Login Page",
+    "test_cases": {
+      "LGN-001": {
+        "company_code": "",
+        "username": "",
+        "password": "",
+        "notes": "Page load verification only."
+      },
+      "LGN-002": {
+        "company_code": "",
+        "username": "",
+        "password": "Test@123"
+      },
+      "LGN-003": {
+        "company_code": "",
+        "username": "",
+        "password": "Test@123"
+      },
+      "LGN-004": {
+        "company_code": "",
+        "username": "",
+        "password": "",
+        "notes": "Forgot password navigation only."
+      },
+      "LGN-005": {
+        "company_code": "",
+        "username": "",
+        "password": "",
+        "notes": "Remember me checkbox UI verification."
+      },
+      "LGN-006": {
+        "company_code": "",
+        "username": "",
+        "password": ""
+      },
+      "LGN-007": {
+        "company_code": "",
+        "username": "admin@mavion.com",
+        "password": "Maviontech@123"
+      },
+      "LGN-008": {
+        "company_code": "MAV123",
+        "username": "",
+        "password": "Maviontech@123"
+      },
+      "LGN-009": {
+        "company_code": "MAV123",
+        "username": "admin@mavion.com",
+        "password": ""
+      },
+      "LGN-010": {
+        "company_code": "  MAV123  ",
+        "username": "admin@mavion.com",
+        "password": "Maviontech@123"
+      },
+      "LGN-011": {
+        "company_code": "MAV123",
+        "username": "  admin@mavion.com  ",
+        "password": "Maviontech@123"
+      },
+      "LGN-012": {
+        "company_code": "MAV123",
+        "username": "admin@mavion.com",
+        "password": "Maviontech@123",
+        "role": "admin"
+      },
+      "LGN-013": {
+        "company_code": "MAV123",
+        "username": "recruiter@mavion.com",
+        "password": "Maviontech@123",
+        "role": "recruiter"
+      },
+      "LGN-014": {
+        "company_code": "BAD999",
+        "username": "admin@mavion.com",
+        "password": "Maviontech@123"
+      },
+      "LGN-015": {
+        "company_code": "MAV123",
+        "username": "admin@mavion.com",
+        "password": "WrongPass@123"
+      },
+      "LGN-016": {
+        "company_code": "MAV123",
+        "username": "unknown@mavion.com",
+        "password": "WrongPass@123"
+      },
+      "LGN-017": {
+        "company_code": "MAV123",
+        "username": "inactive@mavion.com",
+        "password": "Maviontech@123"
+      },
+      "LGN-020": {
+        "company_code": "MAV123",
+        "username": "admin@mavion.com",
+        "password": "Maviontech@123",
+        "follow_up_wrong_password": "WrongPass@123"
+      },
+      "LGN-021": {
+        "company_code": "MAV123",
+        "username": "admin@mavion.com",
+        "password": "Maviontech@123",
+        "session_type": "web_to_web"
+      },
+      "LGN-022": {
+        "company_code": "MAV123",
+        "username": "admin@mavion.com",
+        "password": "Maviontech@123",
+        "session_type": "mobile_to_web"
+      },
+      "LGN-023": {
+        "company_code": "MAV123",
+        "username": "admin@mavion.com",
+        "password": "Maviontech@123",
+        "simulate_session_failure": true
+      },
+      "LGN-024": {
+        "company_code": "MAV123",
+        "username": "admin@mavion.com",
+        "password": "Maviontech@123",
+        "remember_me": true
+      },
+      "LGN-025": {
+        "company_code": "MAV123",
+        "username": "admin@mavion.com",
+        "password": "Maviontech@123",
+        "remember_me": false
+      },
+      "LGN-026": {
+        "company_code": "BLOCK01",
+        "username": "admin@block.com",
+        "password": "ValidPass1!",
+        "tenant_state": "blocked"
+      },
+      "LGN-027": {
+        "company_code": "GF001",
+        "username": "admin@gf.com",
+        "password": "ValidPass1!",
+        "tenant_state": "grandfathered"
+      },
+      "LGN-028": {
+        "protected_urls": {
+          "home": "/home/",
+          "admin_dashboard": "/admin-dashboard/"
+        }
+      },
+      "LGN-029": {
+        "company_code": "MAV123",
+        "username": "admin@mavion.com",
+        "password": "WrongPass@123"
+      },
+      "LGN-030": {
+        "company_code": "MAV123",
+        "username": "admin@mavion.com",
+        "password": "WrongPass@123"
+      }
+    }
   }
 }

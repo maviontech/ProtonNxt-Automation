@@ -1,0 +1,7 @@
+{
+  "module": "Create Team",
+  "page_path": "/create-team/",
+  "member_search_query": "Admin User",
+  "team_search_query": "Automation",
+  "unique_team_prefix": "Automation Team"
+}

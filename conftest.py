@@ -1,14 +1,14 @@
-from pathlib import Path
+import base64
 from datetime import datetime
+from pathlib import Path
+import re
+
 import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 
 from config.config import Config
-
-
-SCREENSHOT_DIR = Path(__file__).resolve().parent / "screenshots"
 
 
 def pytest_addoption(parser):
@@ -18,6 +18,11 @@ def pytest_addoption(parser):
 @pytest.fixture(scope="session")
 def base_url():
     return Config.BASE_URL
+
+
+@pytest.fixture(scope="session")
+def execution_started_at():
+    return datetime.now()
 
 
 @pytest.fixture(scope="session")
@@ -31,7 +36,7 @@ def credentials():
         missing.append("PROTONNXT_PASSWORD")
 
     if missing:
-        pytest.skip(f"Missing required environment variables for login smoke tests: {', '.join(missing)}")
+        pytest.fail(f"Missing required login values: {', '.join(missing)}")
 
     return {
         "company_code": Config.COMPANY_CODE,
@@ -40,18 +45,15 @@ def credentials():
     }
 
 
-@pytest.fixture(scope="session")
-def invalid_credentials():
+def _safe_credentials():
+    if not (Config.COMPANY_CODE and Config.USERNAME and Config.PASSWORD):
+        return None
+
     return {
-        "company_code": Config.INVALID_COMPANY_CODE,
-        "username": Config.INVALID_USERNAME,
-        "password": Config.INVALID_PASSWORD,
+        "company_code": Config.COMPANY_CODE,
+        "username": Config.USERNAME,
+        "password": Config.PASSWORD,
     }
-
-
-@pytest.fixture(scope="session")
-def candidate_testdata():
-    return Config.CANDIDATE_MANAGEMENT
 
 
 @pytest.fixture
@@ -81,40 +83,75 @@ def driver(request):
 
 
 @pytest.fixture(autouse=True)
-def _store_test_context(request, credentials, invalid_credentials, candidate_testdata, base_url):
+def _store_test_context(
+    request,
+    base_url,
+    execution_started_at,
+):
+    started_at = datetime.now()
+    safe_credentials = _safe_credentials()
     request.node.test_context = {
         "base_url": base_url,
-        "valid_credentials": {
-            "company_code": credentials["company_code"],
-            "username": credentials["username"],
-            "password": "********",
-        },
-        "invalid_credentials": {
-            "company_code": invalid_credentials["company_code"],
-            "username": invalid_credentials["username"],
-            "password": "********",
-        },
-        "candidate_testdata_available": bool(candidate_testdata),
+        "session_started_at": execution_started_at.strftime("%Y-%m-%d %H:%M:%S"),
+        "test_started_at": started_at.strftime("%Y-%m-%d %H:%M:%S"),
+        "valid_credentials": (
+            {
+                "company_code": safe_credentials["company_code"],
+                "username": safe_credentials["username"],
+                "password": "********",
+            }
+            if safe_credentials
+            else "not provided"
+        ),
     }
+
+
+@pytest.fixture(autouse=True)
+def _print_test_execution_details(request, base_url):
+    started_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"\n[Test Start] {request.node.nodeid}")
+    print(f"[URL Under Test] {base_url}")
+    print(f"[Execution Time] {started_at}")
+    yield
+    finished_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"[Test End] {request.node.nodeid}")
+    print(f"[Completed At] {finished_at}")
 
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
+    """Capture the browser state after each test case and attach it to pytest-html when available."""
     outcome = yield
     report = outcome.get_result()
 
-    if report.when != "call" or not report.failed:
+    if report.when != "call":
         return
 
-    driver = item.funcargs.get("driver")
-    if driver is None:
+    browser = item.funcargs.get("driver")
+    if browser is None:
         return
 
-    SCREENSHOT_DIR.mkdir(parents=True, exist_ok=True)
-
+    screenshot_dir = Path(__file__).resolve().parent / "screenshots"
+    screenshot_dir.mkdir(exist_ok=True)
+    test_name = re.sub(r"[^A-Za-z0-9_.-]+", "_", item.nodeid).strip("_")
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    safe_name = item.nodeid.replace("::", "__").replace("/", "_").replace("\\", "_")
-    screenshot_path = SCREENSHOT_DIR / f"{safe_name}_{timestamp}.png"
+    result_label = "passed" if report.passed else "failed"
+    screenshot_path = screenshot_dir / f"{test_name}_{result_label}_{timestamp}.png"
 
-    driver.save_screenshot(str(screenshot_path))
-    print(f"\nScreenshot captured: {screenshot_path}")
+    try:
+        browser.save_screenshot(str(screenshot_path))
+        print(f"[Screenshot] {screenshot_path}")
+
+        pytest_html = item.config.pluginmanager.getplugin("html")
+        if pytest_html is not None:
+            extras = getattr(report, "extras", [])
+            image_bytes = screenshot_path.read_bytes()
+            extras.append(
+                pytest_html.extras.png(
+                    base64.b64encode(image_bytes).decode("utf-8"),
+                    name=f"{result_label.title()} Screenshot",
+                )
+            )
+            report.extras = extras
+    except Exception as error:
+        print(f"[Screenshot] Could not capture browser state: {error}")

@@ -1,0 +1,44 @@
+{
+  "module": "Add Team Member Smoke",
+  "page_path": "/teams/add-member/",
+  "smoke_cases": {
+    "AMS-001": {
+      "notes": "Application open, login, and Add Member page load verification.",
+      "expected_elements": [
+        "login_page",
+        "company_code",
+        "username",
+        "password",
+        "login_button",
+        "add_member_form"
+      ]
+    },
+    "AMS-002": {
+      "notes": "Important Add Member controls are visible and clickable.",
+      "expected_placeholders": {
+        "first_name": "e.g., John",
+        "last_name": "e.g., Doe",
+        "email": "e.g., user@example.com",
+        "phone": "e.g., +1 555 123 4567 or 1234567890",
+        "role": "e.g., HR Specialist, Manager"
+      },
+      "expected_controls": [
+        "submit_button"
+      ]
+    },
+    "AMS-003": {
+      "notes": "Basic add and save functionality with valid smoke data.",
+      "first_name": "Ava",
+      "last_name": "Sharma",
+      "email": "__UNIQUE__",
+      "phone": "9876543210",
+      "role": "HR Specialist",
+      "date_joined": "__TODAY__",
+      "status": "active",
+      "expected_result": {
+        "validation_summary_visible": false,
+        "success_feedback": true
+      }
+    }
+  }
+}
