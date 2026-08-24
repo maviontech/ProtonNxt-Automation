@@ -31,6 +31,7 @@ class CreateTeamPage:
     TEAM_SEARCH_INPUT = (By.ID, "team-search")
     TEAMS_TABLE = (By.ID, "teams-table")
     TEAM_ROWS = (By.CSS_SELECTOR, "#teams-table tbody tr")
+    ALERTS = (By.CSS_SELECTOR, ".alert, .alert-danger, .alert-success, .toast, .invalid-feedback")
 
     def __init__(self, driver, timeout=15):
         self.driver = driver
@@ -90,6 +91,9 @@ class CreateTeamPage:
         self.select_first_team_lead()
         self.submit()
 
+    def has_available_members(self):
+        return any(row.is_displayed() for row in self.driver.find_elements(*self.MEMBER_ROWS))
+
     def is_team_name_valid(self):
         return bool(
             self.driver.execute_script(
@@ -108,11 +112,51 @@ class CreateTeamPage:
     def wait_for_page_text(self, text):
         self.wait.until(lambda _: self.page_contains_text(text))
 
+    def wait_for_team_to_be_listed(self, team_name):
+        self.wait.until(lambda _: self.is_team_listed(team_name))
+
     def is_team_listed(self, team_name):
         return any(
             team_name.lower() in row.text.lower()
             for row in self.driver.find_elements(*self.TEAM_ROWS)
         )
+
+    def get_page_text(self):
+        return self.driver.find_element(By.TAG_NAME, "body").text.strip()
+
+    def get_alert_texts(self):
+        return [
+            element.text.strip()
+            for element in self.driver.find_elements(*self.ALERTS)
+            if element.is_displayed() and element.text.strip()
+        ]
+
+    def wait_for_team_creation_result(self, team_name, success_keyword, timeout=8):
+        short_wait = WebDriverWait(self.driver, timeout)
+
+        def _result(_):
+            if self.is_team_listed(team_name):
+                return {"status": "success", "details": team_name}
+
+            alerts = self.get_alert_texts()
+            if alerts:
+                joined_alerts = " | ".join(alerts)
+                if success_keyword.lower() in joined_alerts.lower():
+                    return {"status": "success", "details": joined_alerts}
+                return {"status": "error", "details": joined_alerts}
+
+            body_text = self.get_page_text()
+            lowered_body = body_text.lower()
+            if success_keyword.lower() in lowered_body:
+                return {"status": "success", "details": body_text}
+            if any(
+                keyword in lowered_body
+                for keyword in ("already exists", "select at least one member", "team lead must be selected", "error")
+            ):
+                return {"status": "error", "details": body_text}
+            return False
+
+        return short_wait.until(_result)
 
     def search_members(self, query):
         search_input = self._visible(self.MEMBER_SEARCH_INPUT)

@@ -52,6 +52,7 @@ class Config:
     MANAGE_MEMBERS_TESTDATA = _load_testdata("manage_members_data.json")
     MANAGE_MEMBERS_SMOKE_TESTDATA = _load_testdata("manage_members_smoke_data.json")
     CREATE_TEAM_TESTDATA = _load_testdata("create_team_data.json")
+    CREATE_TEAM_SMOKE_TESTDATA = _load_testdata("create_team_smoke_data.json")
     VALID_LOGIN = LOGIN_TESTDATA.get("valid_login", {})
     LOCK_TEST_LOGIN = LOGIN_TESTDATA.get("lock_test_login", {})
 

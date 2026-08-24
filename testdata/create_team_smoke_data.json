@@ -1,0 +1,20 @@
+{
+  "module": "Create Team Smoke",
+  "page_path": "/create-team/",
+  "smoke_cases": {
+    "CTS-001": {
+      "notes": "Application open, login, navigation, and Create Team page load verification.",
+      "team_name_maxlength": "100"
+    },
+    "CTS-002": {
+      "notes": "Important Create Team controls are visible and clickable.",
+      "member_search_query": "Admin User",
+      "team_search_query": "Automation"
+    },
+    "CTS-003": {
+      "notes": "Basic team creation works with valid data.",
+      "unique_team_prefix": "Smoke Automation Team",
+      "expected_success_keyword": "created successfully"
+    }
+  }
+}
