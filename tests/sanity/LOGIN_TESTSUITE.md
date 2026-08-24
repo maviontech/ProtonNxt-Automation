@@ -1,4 +1,4 @@
-# ProtonNxt Login Page - Test Case Suite
+# ProtonNxt Login Test Suite
 
 ## LGN-001 - Login page loads successfully
 
