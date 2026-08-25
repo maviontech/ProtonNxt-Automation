@@ -2,6 +2,8 @@ import os
 import json
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 
 def _default_chrome_binary():
     candidates = [
@@ -42,6 +44,10 @@ def _load_testdata(filename):
 
     with data_file.open("r", encoding="utf-8") as file:
         return json.load(file)
+
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+load_dotenv(PROJECT_ROOT / ".env")
 
 
 class Config:
