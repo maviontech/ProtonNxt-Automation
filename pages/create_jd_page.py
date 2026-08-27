@@ -23,7 +23,10 @@ class CreateJDPage:
         By.XPATH,
         "//h2[normalize-space()='Create Job Description' or normalize-space()='Create New JD']",
     )
-    FORM = (By.XPATH, "//form[.//*[@id='jd_summary'] and .//*[@id='jd_description']]")
+    FORM = (
+        By.XPATH,
+        "//form[.//*[@id='jd_summary'] and .//*[@id='jd_description']]",
+    )
     JD_SUMMARY_INPUT = (By.ID, "jd_summary")
     COMPANY_SEARCH_INPUT = (By.ID, "companySearch")
     COMPANY_ID_INPUT = (By.ID, "companyId")
@@ -32,6 +35,7 @@ class CreateJDPage:
     JD_SPOC_NAME_INPUT = (By.ID, "jd_spoc_name")
     JD_SPOC_EMAIL_INPUT = (By.ID, "jd_spoc_email")
     JD_DESCRIPTION_TEXTAREA = (By.ID, "jd_description")
+    JD_DESCRIPTION_EDITOR = (By.CSS_SELECTOR, "#jd_description_editor .ql-editor")
     FORMAT_PASTED_TEXT_BUTTON = (By.ID, "formatTextBtn")
     MUST_HAVE_SKILLS_TEXTAREA = (By.ID, "must_have_skills")
     GOOD_TO_HAVE_SKILLS_TEXTAREA = (By.ID, "good_to_have_skills")
@@ -53,6 +57,10 @@ class CreateJDPage:
     UNWORKED_JDS_TABLE = (By.ID, "unworked-jds-table")
     UNWORKED_JDS_BODY = (By.ID, "unworked-jds-tbody")
     EDIT_BUTTON = (By.ID, "jd-edit-btn")
+    DETAILS_MODAL = (
+        By.XPATH,
+        "//*[contains(@class,'modal') or contains(@class,'dialog')][.//*[normalize-space()='Job Description']]",
+    )
 
     FIELD_LOCATORS = {
         "jd_summary": JD_SUMMARY_INPUT,
@@ -112,6 +120,16 @@ class CreateJDPage:
             element.send_keys(value)
         return element
 
+    def _dispatch_input_events(self, element):
+        self.driver.execute_script(
+            """
+            arguments[0].dispatchEvent(new Event('input', { bubbles: true }));
+            arguments[0].dispatchEvent(new Event('change', { bubbles: true }));
+            arguments[0].dispatchEvent(new Event('blur', { bubbles: true }));
+            """,
+            element,
+        )
+
     def current_path(self):
         return urlparse(self.driver.current_url).path
 
@@ -169,19 +187,54 @@ class CreateJDPage:
         self._clear_and_type(self.JD_SPOC_EMAIL_INPUT, value)
 
     def enter_description(self, value):
-        field = self._field("jd_description")
-        self.driver.execute_script(
-            """
-            arguments[0].value = arguments[1];
-            arguments[0].dispatchEvent(new Event('input', { bubbles: true }));
-            arguments[0].dispatchEvent(new Event('change', { bubbles: true }));
-            """,
-            field,
-            value or "",
-        )
+        backing_field = self._field("jd_description")
+        editor = None
+        if self._is_visible(self.JD_DESCRIPTION_EDITOR):
+            editor = self._visible(self.JD_DESCRIPTION_EDITOR)
+
+        target = editor or backing_field
+        try:
+            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", target)
+            self.driver.execute_script("arguments[0].click();", target)
+        except Exception:
+            pass
+
+        try:
+            target.send_keys(Keys.CONTROL, "a")
+            target.send_keys(Keys.BACKSPACE)
+        except Exception:
+            self.driver.execute_script("arguments[0].value = '';", backing_field)
+            if editor is not None:
+                self.driver.execute_script("arguments[0].innerText = '';", editor)
+
+        if value:
+            typed = False
+            try:
+                target.send_keys(value)
+                typed = True
+            except Exception:
+                typed = False
+
+            if not typed:
+                if editor is not None:
+                    self.driver.execute_script("arguments[0].innerText = arguments[1];", editor, value)
+                self.driver.execute_script("arguments[0].value = arguments[1];", backing_field, value)
+            else:
+                self.driver.execute_script("arguments[0].value = arguments[1];", backing_field, value)
+
+        if editor is not None:
+            self._dispatch_input_events(editor)
+        self._dispatch_input_events(backing_field)
+        expected_value = (value or "").strip()
+        self.wait.until(lambda _: self.get_description_value().strip() == expected_value)
 
     def get_description_value(self):
-        return self._field("jd_description").get_attribute("value") or ""
+        raw_value = self._field("jd_description").get_attribute("value") or ""
+        if raw_value.strip():
+            return raw_value
+        if self._is_visible(self.JD_DESCRIPTION_EDITOR):
+            return self._visible(self.JD_DESCRIPTION_EDITOR).text.strip()
+        return raw_value
 
     def format_pasted_text(self):
         try:
@@ -235,6 +288,8 @@ class CreateJDPage:
             raise ValueError("Either value or visible_text must be provided to select_status().")
 
     def get_selected_status_value(self):
+        if self.is_details_modal_displayed():
+            return self.get_details_modal_values().get("status", "").lower()
         return Select(self._visible(self.JD_STATUS_SELECT)).first_selected_option.get_attribute("value")
 
     def get_selected_status_text(self):
@@ -245,6 +300,24 @@ class CreateJDPage:
         return [(option.get_attribute("value"), option.text.strip()) for option in select.options]
 
     def get_field_value(self, field_name):
+        if self.is_details_modal_displayed():
+            modal_values = self.get_details_modal_values()
+            modal_field_map = {
+                "jd_summary": "position summary",
+                "jd_description": "job description",
+                "must_have_skills": "required skills",
+                "good_to_have_skills": "preferred skills",
+                "experience_required": "experience required",
+                "education_required": "education required",
+                "budget_ctc": "budget/ctc",
+                "location": "location",
+                "no_of_positions": "number of positions",
+                "jd_status": "status",
+            }
+            modal_key = modal_field_map.get(field_name)
+            if modal_key is not None:
+                return modal_values.get(modal_key, "")
+
         field = self._field(field_name)
         if field_name == "jd_status":
             return Select(field).first_selected_option.get_attribute("value")
@@ -362,9 +435,7 @@ class CreateJDPage:
         self.wait.until(lambda _: bool(self.get_company_id()))
         self.wait.until(lambda _: bool(self.get_selected_company()))
         if expected_company:
-            self.wait.until(
-                lambda _: expected_company.lower() in self.get_selected_company().lower()
-            )
+            self.wait.until(lambda _: expected_company.lower() in self.get_selected_company().lower())
         return self.get_selected_company()
 
     def get_selected_company(self):
@@ -405,27 +476,40 @@ class CreateJDPage:
             self.enter_positions(no_of_positions)
         if jd_status:
             self.select_status(value=jd_status)
+        self._assert_required_fields_ready(jd_summary=jd_summary, jd_description=jd_description)
 
     def submit(self):
         self._clickable(self.SUBMIT_BUTTON).click()
+
+    def _assert_required_fields_ready(self, jd_summary="", jd_description=""):
+        if jd_summary:
+            self.wait.until(lambda _: self.get_field_value("jd_summary").strip() == jd_summary.strip())
+        if jd_description:
+            self.wait.until(lambda _: self.get_description_value().strip() == jd_description.strip())
 
     def submit_with_data(self, **jd_data):
         self.fill_form(**jd_data)
         self.submit()
 
     def get_alert_texts(self):
-        return [
-            element.text.strip()
-            for element in self.driver.find_elements(*self.ALERTS)
-            if element.is_displayed() and element.text.strip()
-        ]
+        for attempt in range(3):
+            try:
+                return [
+                    element.text.strip()
+                    for element in self.driver.find_elements(*self.ALERTS)
+                    if element.is_displayed() and element.text.strip()
+                ]
+            except StaleElementReferenceException:
+                if attempt == 2:
+                    raise
+        return []
 
     def get_success_feedback(self):
         texts = self.get_alert_texts()
         if texts:
             return " | ".join(texts)
 
-        page_text = self.driver.find_element(By.TAG_NAME, "body").text
+        page_text = self._get_body_text()
         for keyword in ("created successfully", "jd created", "job description created successfully"):
             if keyword in page_text.lower():
                 return page_text
@@ -435,7 +519,7 @@ class CreateJDPage:
         texts = self.get_alert_texts()
         if texts:
             return " | ".join(texts)
-        return self.driver.find_element(By.TAG_NAME, "body").text
+        return self._get_body_text()
 
     def open_view_edit_from_navigation(self):
         try:
@@ -455,7 +539,10 @@ class CreateJDPage:
 
     def is_jd_listed(self, title):
         title_lower = title.lower()
-        rows = self.driver.find_elements(By.XPATH, f"//*[contains(translate(normalize-space(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"{title_lower}\")]")
+        rows = self.driver.find_elements(
+            By.XPATH,
+            f"//*[contains(translate(normalize-space(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"{title_lower}\")]",
+        )
         for row in rows:
             try:
                 if row.is_displayed() and title_lower in row.text.lower():
@@ -472,7 +559,7 @@ class CreateJDPage:
         self.wait_for_jd_to_be_listed(title, timeout=timeout)
 
         title_lower = title.lower()
-        clickable_locators = [
+        row_locators = [
             (
                 By.XPATH,
                 f"//tr[contains(translate(normalize-space(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"{title_lower}\")]",
@@ -483,31 +570,114 @@ class CreateJDPage:
             ),
         ]
 
-        for locator in clickable_locators:
+        for locator in row_locators:
             elements = self.driver.find_elements(*locator)
             for element in elements:
+                if not self._open_matching_result_element(element):
+                    continue
                 try:
-                    if not element.is_displayed():
-                        continue
-                    ActionChains(self.driver).move_to_element(element).click(element).perform()
-                    try:
-                        WebDriverWait(self.driver, 3).until(
-                            lambda _: self._is_any_edit_field_visible()
-                        )
-                        return True
-                    except TimeoutException:
-                        continue
-                except (StaleElementReferenceException, ElementClickInterceptedException):
+                    WebDriverWait(self.driver, 3).until(
+                        lambda _: self._is_any_edit_field_visible() or self.is_details_modal_displayed()
+                    )
+                    return True
+                except TimeoutException:
                     continue
 
         if self._is_visible(self.EDIT_BUTTON):
             self._clickable(self.EDIT_BUTTON).click()
             try:
-                WebDriverWait(self.driver, 3).until(lambda _: self._is_any_edit_field_visible())
+                WebDriverWait(self.driver, 3).until(
+                    lambda _: self._is_any_edit_field_visible() or self.is_details_modal_displayed()
+                )
                 return True
             except TimeoutException:
                 return False
         return False
+
+    def is_details_modal_displayed(self):
+        return self._is_visible(self.DETAILS_MODAL)
+
+    def get_details_modal_values(self):
+        if not self.is_details_modal_displayed():
+            return {}
+
+        modal = self._visible(self.DETAILS_MODAL)
+        lines = [line.strip() for line in modal.text.splitlines() if line.strip()]
+        values = {}
+        i = 0
+        labels = {
+            "position summary",
+            "job description",
+            "required skills",
+            "preferred skills",
+            "experience required",
+            "education required",
+            "budget/ctc",
+            "location",
+            "number of positions",
+            "status",
+            "company",
+            "team",
+        }
+
+        while i < len(lines) - 1:
+            label = lines[i].lower()
+            if label in labels:
+                values[label] = lines[i + 1]
+                i += 2
+                continue
+            i += 1
+
+        return values
+
+    def _open_matching_result_element(self, element):
+        try:
+            if not element.is_displayed():
+                return False
+        except StaleElementReferenceException:
+            return False
+
+        action_locators = [
+            (By.XPATH, ".//button"),
+            (By.XPATH, ".//a"),
+            (
+                By.XPATH,
+                ".//*[self::button or self::a or @role='button'][contains(@id, 'edit') or contains(@class, 'edit')]",
+            ),
+            (
+                By.XPATH,
+                ".//*[self::button or self::a or @role='button'][contains(@href, 'edit') or contains(@onclick, 'edit')]",
+            ),
+        ]
+
+        for locator in action_locators:
+            try:
+                actions = element.find_elements(*locator)
+            except StaleElementReferenceException:
+                return False
+            for action in actions:
+                if not self._click_result_action(action):
+                    continue
+                return True
+
+        try:
+            ActionChains(self.driver).move_to_element(element).click(element).perform()
+            return True
+        except (StaleElementReferenceException, ElementClickInterceptedException):
+            return False
+
+    def _click_result_action(self, action):
+        try:
+            if not action.is_displayed() or not action.is_enabled():
+                return False
+            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", action)
+            try:
+                action.click()
+            except ElementClickInterceptedException:
+                self.driver.execute_script("arguments[0].click();", action)
+            return True
+        except StaleElementReferenceException:
+            return False
 
     def _is_any_edit_field_visible(self):
         try:
@@ -522,3 +692,12 @@ class CreateJDPage:
             )
         except Exception:
             return False
+
+    def _get_body_text(self, attempts=3):
+        for attempt in range(attempts):
+            try:
+                return self.driver.find_element(By.TAG_NAME, "body").text
+            except StaleElementReferenceException:
+                if attempt == attempts - 1:
+                    raise
+        return ""
