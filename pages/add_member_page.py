@@ -1,5 +1,7 @@
+from dbm import error
 from urllib.parse import urlparse
 
+from attrs import field
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -75,14 +77,32 @@ class AddMemberPage:
         return self._is_visible(self.SUBMIT_BUTTON)
 
     def fill_field(self, field_name, value):
-        field = self._field(field_name)
-        if field_name == "status":
-            Select(field).select_by_value(value)
-            return
+     field = self._field(field_name)
 
-        field.clear()
-        if value:
-            field.send_keys(value)
+     if field_name == "status":
+        Select(field).select_by_value(value)
+        return
+
+     if field_name == "date_joined":
+        self.driver.execute_script(
+            """
+            arguments[0].value = arguments[1];
+            arguments[0].dispatchEvent(
+                new Event('input', { bubbles: true })
+            );
+            arguments[0].dispatchEvent(
+                new Event('change', { bubbles: true })
+            );
+            """,
+            field,
+            value,
+        )
+        return
+
+     field.clear()
+
+     if value:
+        field.send_keys(value)
 
     def fill_form(
         self,
@@ -104,11 +124,40 @@ class AddMemberPage:
             self.fill_field("status", status)
 
     def submit(self):
+     old_form = self._visible(self.FORM)
+     submit_button = self._clickable(self.SUBMIT_BUTTON)
+
+    def submit(self):
         self._clickable(self.SUBMIT_BUTTON).click()
+
+    def submit_and_wait_for_reload(self):
+        old_form = self._visible(self.FORM)
+        submit_button = self._clickable(self.SUBMIT_BUTTON)
+
+        submit_button.click()
+
+        self.wait.until(
+            EC.staleness_of(old_form)
+        )
+
+        self.wait.until(
+            EC.visibility_of_element_located(self.FORM)
+        )
+
+    def get_field_error_text(self, field_name):
+        error_locator = (By.ID, f"{field_name}_error")
+
+        try:
+            error = self.wait.until(
+                EC.visibility_of_element_located(error_locator)
+            )
+            return error.text.strip()
+        except TimeoutException:
+            return ""
 
     def submit_with_data(self, **member_data):
         self.fill_form(**member_data)
-        self.submit()
+        self.submit_and_wait_for_reload()
 
     def get_field_value(self, field_name):
         field = self._field(field_name)

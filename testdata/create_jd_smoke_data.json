@@ -1,0 +1,137 @@
+{
+  "module": "Create JD Smoke",
+  "page_path": "/jds/",
+  "view_edit_path": "/view_edit_jds/",
+  "smoke_cases": {
+    "CJD-SMK-003": {
+      "notes": "Company can be searched and selected from the custom dropdown.",
+      "company_search": "",
+      "expected_company": "",
+      "company_candidates": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ]
+    },
+    "CJD-SMK-004": {
+      "notes": "JD Description accepts realistic multiline content.",
+      "description": "Senior Python Developer\n\nResponsibilities:\n- Build Django applications\n- Develop REST APIs\n- Optimize database queries\n\nRequirements:\n- Python\n- Django\n- REST API"
+    },
+    "CJD-SMK-005": {
+      "notes": "Format Pasted Text retains meaningful JD content.",
+      "description": "Senior Python Developer\nResponsibilities:\n- Build Django applications\n- Develop REST APIs\nRequirements:\n- Python\n- Django",
+      "retained_keyword": "Python"
+    },
+    "CJD-SMK-006": {
+      "notes": "Must Have and Good to Have skills accept realistic smoke data.",
+      "must_have_skills": "Python, Django, REST API, PostgreSQL",
+      "good_to_have_skills": "AWS, Docker, Redis"
+    },
+    "CJD-SMK-007": {
+      "notes": "Number of Positions accepts a valid smoke value.",
+      "default_positions": "1",
+      "valid_positions": 2
+    },
+    "CJD-SMK-008": {
+      "notes": "JD Status can be selected from actual application values.",
+      "status_value": "active"
+    },
+    "CJD-SMK-009": {
+      "notes": "Minimum required valid JD can be created.",
+      "title_prefix": "Create JD Smoke Minimum AUTO",
+      "company_search": "",
+      "expected_company": "",
+      "company_candidates": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "jd_description": "Minimum valid JD content for smoke automation.\nPython developer role.\nREST API experience required.",
+      "must_have_skills": "Python, REST API",
+      "budget_ctc": "10 LPA",
+      "location": "Pune",
+      "no_of_positions": 1,
+      "jd_status": "active"
+    },
+    "CJD-SMK-010": {
+      "notes": "Complete valid JD can be created with realistic smoke data.",
+      "title_prefix": "Senior Python Developer AUTO",
+      "company_search": "",
+      "expected_company": "",
+      "company_candidates": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "jd_spoc_name": "Rahul Sharma",
+      "jd_spoc_email": "qa.automation@example.com",
+      "jd_description": "Senior Python Developer\n\nResponsibilities:\n- Build Django applications\n- Develop REST APIs\n- Optimize database queries\n\nRequirements:\n- Python\n- Django\n- REST API",
+      "must_have_skills": "Python, Django, REST API, PostgreSQL",
+      "good_to_have_skills": "AWS, Docker, Redis",
+      "budget_ctc": "12-18 LPA",
+      "experience_required": "4-6 years",
+      "education_required": "Bachelor's in Computer Science",
+      "location": "Pune / Hybrid",
+      "no_of_positions": 2,
+      "jd_status": "active"
+    },
+    "CJD-SMK-011": {
+      "notes": "JD creation is verified by persistence in View/Edit JDs.",
+      "title_prefix": "Create JD Persistence AUTO",
+      "company_search": "",
+      "expected_company": "",
+      "company_candidates": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "jd_spoc_name": "Rahul Sharma",
+      "jd_spoc_email": "qa.automation@example.com",
+      "jd_description": "Persistence verification JD.\nPython and Django role.\nSearch result should list the created JD.",
+      "must_have_skills": "Python, Django, REST API",
+      "good_to_have_skills": "AWS, Docker",
+      "budget_ctc": "14 LPA",
+      "experience_required": "3-5 years",
+      "education_required": "Bachelor's in Computer Science",
+      "location": "Pune / Hybrid",
+      "no_of_positions": 2,
+      "jd_status": "active"
+    },
+    "CJD-SMK-012": {
+      "notes": "Important persisted values are verified after opening the created JD if practical.",
+      "title_prefix": "Create JD Persisted Values AUTO",
+      "company_search": "",
+      "expected_company": "",
+      "company_candidates": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "jd_spoc_name": "Rahul Sharma",
+      "jd_spoc_email": "qa.automation@example.com",
+      "jd_description": "Persisted values verification JD.\nPython, Django, REST API.\nPune hybrid role.",
+      "must_have_skills": "Python, Django, REST API, PostgreSQL",
+      "good_to_have_skills": "AWS, Docker, Redis",
+      "budget_ctc": "12-18 LPA",
+      "experience_required": "4-6 years",
+      "education_required": "Bachelor's in Computer Science",
+      "location": "Pune / Hybrid",
+      "no_of_positions": 2,
+      "jd_status": "active"
+    },
+    "CJD-SMK-013": {
+      "notes": "Basic invalid submission leaves mandatory fields empty and relies on native validation.",
+      "required_field": "jd_summary"
+    }
+  }
+}

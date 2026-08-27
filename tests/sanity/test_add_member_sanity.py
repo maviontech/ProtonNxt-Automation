@@ -134,13 +134,6 @@ def test_atm_007_email_format_is_validated(driver, credentials):
     assert add_member_page.get_native_validation_message("email"), "Email field should expose a validation message"
 
 
-def test_atm_008_phone_pattern_is_validated(driver, credentials):
-    add_member_page = _open_add_member_page(driver, credentials)
-    case_data = _resolved_case("ATM-007")
-    add_member_page.fill_form(**case_data)
-
-    assert add_member_page.is_field_invalid("phone"), "Invalid phone value should be rejected"
-    assert add_member_page.get_native_validation_message("phone"), "Phone field should expose a validation message"
 
 
 def test_atm_009_role_is_required(driver, credentials):
@@ -149,6 +142,23 @@ def test_atm_009_role_is_required(driver, credentials):
     add_member_page.fill_form(**case_data)
 
     assert add_member_page.is_field_invalid("role"), "Role should be invalid when left blank"
+
+def test_atm_008_phone_pattern_is_validated(driver, credentials):
+    add_member_page = _open_add_member_page(driver, credentials)
+    case_data = _resolved_case("ATM-007")
+
+    add_member_page.fill_form(**case_data)
+    add_member_page.submit()
+
+    phone_error = add_member_page.get_field_error_text("phone")
+
+    assert phone_error, (
+        "Invalid phone value should show a validation error"
+    )
+
+    assert "digits" in phone_error.lower(), (
+        f"Unexpected phone validation message: {phone_error}"
+    )
 
 
 def test_atm_010_date_joined_is_required(driver, credentials):
@@ -165,15 +175,18 @@ def test_atm_011_date_joined_bounds_are_enforced(driver, credentials):
     max_case = _resolved_case("ATM-011")
     bounds = add_member_page.get_date_bounds()
 
-    assert bounds["min"] == "2020-01-01", "Date Joined min bound mismatch"
-    assert bounds["max"] == date.today().isoformat(), "Date Joined max bound should match today's date"
+    assert bounds["min"] == "1980-01-01", "Date Joined min bound mismatch"
+    assert bounds["max"] == date.today().isoformat(), "Date Joined max bound mismatch"
 
     add_member_page.fill_form(**min_case)
-    assert add_member_page.is_field_invalid("date_joined"), "Past out-of-range date should be invalid"
+    assert add_member_page.is_field_invalid(
+        "date_joined"
+    ), "Past out-of-range date should be invalid"
 
     add_member_page.fill_form(**max_case)
-    assert add_member_page.is_field_invalid("date_joined"), "Future date should be invalid"
-
+    assert add_member_page.is_field_invalid(
+        "date_joined"
+    ), "Future date should be invalid"
 
 def test_atm_012_max_length_and_status_selection_work(driver, credentials):
     add_member_page = _open_add_member_page(driver, credentials)

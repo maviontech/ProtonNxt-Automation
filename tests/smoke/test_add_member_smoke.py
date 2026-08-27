@@ -12,14 +12,36 @@ pytestmark = pytest.mark.smoke
 
 
 def _resolved_valid_member_case():
-    case_data = dict(Config.ADD_MEMBER_SMOKE_TESTDATA["smoke_cases"]["AMS-003"])
+    raw_case = Config.ADD_MEMBER_SMOKE_TESTDATA[
+        "smoke_cases"
+    ]["AMS-003"]
+
+    form_fields = (
+        "first_name",
+        "last_name",
+        "email",
+        "phone",
+        "role",
+        "date_joined",
+        "status",
+    )
+
+    case_data = {
+        key: raw_case[key]
+        for key in form_fields
+        if key in raw_case
+    }
+
     unique_seed = int(time.time() * 1000)
 
     for key, value in list(case_data.items()):
         if value == "__TODAY__":
             case_data[key] = date.today().isoformat()
+
         elif value == "__UNIQUE__":
-            case_data[key] = f"smoke.atm002.{unique_seed}@example.com"
+            case_data[key] = (
+                f"smoke.atm002.{unique_seed}@example.com"
+            )
 
     return case_data
 

@@ -31,13 +31,17 @@ class LoginPage:
         "//a[contains(translate(normalize-space(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'subscription package')]",
     )
     PASSWORD_TOGGLE = (
-        By.XPATH,
-        "//input[@id='password']/following::*[(self::button or self::span or self::div or self::a) and (@role='button' or .//*[name()='svg'])][1]",
+    By.ID,
+    "toggle-password",
     )
 
     DASHBOARD_SIDEBAR = (By.ID, "sidebar")
     PRELOGOUT_LINK = (By.CSS_SELECTOR, "a[href='/prelogout/']")
     FINAL_LOGOUT_BUTTON = (By.CSS_SELECTOR, "form[action='/logout/'] button[type='submit']")
+    SIGN_IN_AGAIN_BUTTON = (
+        By.XPATH,
+        "//*[self::a or self::button][contains(translate(normalize-space(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'sign in')]",
+    )
 
     def __init__(self, driver, timeout=15):
         self.driver = driver
@@ -159,10 +163,8 @@ class LoginPage:
     def current_url_contains(self, text):
         return text.lower() in self.driver.current_url.lower()
 
-    def is_on_login_route(self):
-        path = self.current_path().lower()
-        page_source = self.driver.page_source.lower()
-        return path in ("", "/", "/login/", "/login") or "sign in" in page_source or "login" in page_source
+    def is_authenticated_destination_displayed(self):
+        return self.is_dashboard_displayed() or not self.is_authentication_screen_displayed()
 
     def _masked_value(self, value):
         return "*" * len(value) if value else "(empty)"
@@ -227,8 +229,18 @@ class LoginPage:
     def is_dashboard_displayed(self):
         return self._is_visible(self.DASHBOARD_SIDEBAR)
 
-    def is_authenticated_destination_displayed(self):
-        return self.is_dashboard_displayed() or not self.is_authentication_screen_displayed()
+    def is_authentication_screen_displayed(self):
+        page_source = self.driver.page_source.lower()
+        current_url = self.driver.current_url.lower()
+        current_path = self.current_path().lower()
+        return (
+            self.is_login_page_displayed()
+            or current_path in ("", "/", "/login", "/login/", "/logout", "/logout/")
+            or current_url.endswith("/logout/")
+            or "logged out" in page_source
+            or "sign in" in page_source
+            or "login" in page_source
+        )
 
     def is_invalid_login_message_displayed(self):
         return self._is_visible(self.ERROR_MESSAGE)
@@ -260,13 +272,11 @@ class LoginPage:
         self._clickable(self.PRELOGOUT_LINK).click()
         self._clickable(self.FINAL_LOGOUT_BUTTON).click()
 
-    def is_authentication_screen_displayed(self):
-        page_source = self.driver.page_source.lower()
-        current_url = self.driver.current_url.lower()
-        return (
-            self.is_login_page_displayed()
-            or current_url.endswith("/logout/")
-            or "logged out" in page_source
-            or "sign in" in page_source
-            or "login" in page_source
-        )
+    def ensure_login_form_displayed(self):
+        if self.is_login_page_displayed():
+            return True
+
+        if self._is_visible(self.SIGN_IN_AGAIN_BUTTON):
+            self._clickable(self.SIGN_IN_AGAIN_BUTTON).click()
+
+        return self.is_login_page_displayed()

@@ -377,6 +377,7 @@ def test_lgn_024_remember_me_stores_company_code_and_email(driver):
 
     login_page.logout()
     login_page.open(Config.BASE_URL)
+    assert login_page.ensure_login_form_displayed(), "Login form did not reappear after logout"
 
     assert login_page.get_company_code_value() == case_data["company_code"], "Company Code was not retained"
     assert login_page.get_username_value() == case_data["username"], "Login Email was not retained"
@@ -396,6 +397,7 @@ def test_lgn_025_unchecked_remember_me_does_not_store_login_data(driver):
 
     login_page.logout()
     login_page.open(Config.BASE_URL)
+    assert login_page.ensure_login_form_displayed(), "Login form did not reappear after logout"
 
     assert login_page.get_company_code_value() in ("", None), "Company Code should not be retained"
     assert login_page.get_username_value() in ("", None), "Login Email should not be retained"

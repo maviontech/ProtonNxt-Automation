@@ -1,0 +1,44 @@
+{
+  "module": "Create Customer Smoke",
+  "page_path": "/create_customer/",
+  "smoke_cases": {
+    "CC-SMK-001": {
+      "notes": "Create Customer page loads after authenticated navigation."
+    },
+    "CC-SMK-002": {
+      "notes": "Critical Create Customer controls are visible with expected placeholders.",
+      "expected_placeholders": {
+        "company_name": "Enter company name",
+        "contact_person_name": "Contact person",
+        "contact_email": "Contact email",
+        "contact_phone": "Contact phone",
+        "search": "Search company..."
+      }
+    },
+    "CC-SMK-003": {
+      "notes": "Create Customer fields retain valid smoke data before submit.",
+      "company_name_prefix": "Smoke Customer Fields AUTO",
+      "contact_person_name": "Aarav Sharma",
+      "contact_email_prefix": "customer.fields.auto",
+      "contact_phone": "9876543210"
+    },
+    "CC-SMK-004": {
+      "notes": "Valid customer can be created and success feedback is shown.",
+      "company_name_prefix": "Smoke Customer Create AUTO",
+      "contact_person_name": "Riya Mehta",
+      "contact_email_prefix": "customer.create.auto",
+      "contact_phone": "9876543211"
+    },
+    "CC-SMK-005": {
+      "notes": "Created customer is searchable and remains listed in the Customer List.",
+      "company_name_prefix": "Smoke Customer Search AUTO",
+      "contact_person_name": "Karan Patel",
+      "contact_email_prefix": "customer.search.auto",
+      "contact_phone": "9876543212"
+    },
+    "CC-SMK-006": {
+      "notes": "Missing required company name prevents creation through browser validation.",
+      "required_field": "company_name"
+    }
+  }
+}

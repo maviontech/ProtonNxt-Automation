@@ -1,6 +1,6 @@
 from urllib.parse import urlparse
 
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import StaleElementReferenceException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
@@ -24,10 +24,10 @@ class CreateTeamPage:
         By.XPATH,
         "(//table[@id='members-table']//input[@name='members']/parent::label)[1]",
     )
-    FIRST_TEAM_LEAD_RADIO_LABEL = (
-        By.XPATH,
-        "(//table[@id='members-table']//input[@name='team_lead']/parent::label)[1]",
-    )
+    FIRST_TEAM_LEAD_RADIO = (
+    By.XPATH,
+    "(//table[@id='members-table']//input[@name='team_lead'])[1]",
+)
     TEAM_SEARCH_INPUT = (By.ID, "team-search")
     TEAMS_TABLE = (By.ID, "teams-table")
     TEAM_ROWS = (By.CSS_SELECTOR, "#teams-table tbody tr")
@@ -83,7 +83,7 @@ class CreateTeamPage:
         self._clickable(self.FIRST_MEMBER_CHECKBOX_LABEL).click()
 
     def select_first_team_lead(self):
-        self._clickable(self.FIRST_TEAM_LEAD_RADIO_LABEL).click()
+        self._clickable(self.FIRST_TEAM_LEAD_RADIO).click()
 
     def create_team(self, team_name):
         self.fill_team_name(team_name)
@@ -92,7 +92,7 @@ class CreateTeamPage:
         self.submit()
 
     def has_available_members(self):
-        return any(row.is_displayed() for row in self.driver.find_elements(*self.MEMBER_ROWS))
+        return self._any_displayed(self.MEMBER_ROWS)
 
     def is_team_name_valid(self):
         return bool(
@@ -116,20 +116,43 @@ class CreateTeamPage:
         self.wait.until(lambda _: self.is_team_listed(team_name))
 
     def is_team_listed(self, team_name):
-        return any(
-            team_name.lower() in row.text.lower()
-            for row in self.driver.find_elements(*self.TEAM_ROWS)
-        )
+        team_name_lower = team_name.lower()
+        return any(team_name_lower in text.lower() for text in self._get_texts(self.TEAM_ROWS))
 
     def get_page_text(self):
         return self.driver.find_element(By.TAG_NAME, "body").text.strip()
 
     def get_alert_texts(self):
-        return [
-            element.text.strip()
-            for element in self.driver.find_elements(*self.ALERTS)
-            if element.is_displayed() and element.text.strip()
-        ]
+        visible_texts = []
+        for text in self._get_texts(self.ALERTS, visible_only=True):
+            stripped_text = text.strip()
+            if stripped_text:
+                visible_texts.append(stripped_text)
+        return visible_texts
+
+    def _any_displayed(self, locator, attempts=3):
+        for attempt in range(attempts):
+            try:
+                return any(element.is_displayed() for element in self.driver.find_elements(*locator))
+            except StaleElementReferenceException:
+                if attempt == attempts - 1:
+                    raise
+        return False
+
+    def _get_texts(self, locator, visible_only=False, attempts=3):
+        for attempt in range(attempts):
+            try:
+                elements = self.driver.find_elements(*locator)
+                texts = []
+                for element in elements:
+                    if visible_only and not element.is_displayed():
+                        continue
+                    texts.append(element.text)
+                return texts
+            except StaleElementReferenceException:
+                if attempt == attempts - 1:
+                    raise
+        return []
 
     def wait_for_team_creation_result(self, team_name, success_keyword, timeout=8):
         short_wait = WebDriverWait(self.driver, timeout)
