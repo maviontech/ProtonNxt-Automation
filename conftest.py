@@ -11,6 +11,14 @@ from selenium.webdriver.chrome.service import Service
 from config.config import Config
 
 
+def _extract_case_id(nodeid):
+    name = nodeid.split("::")[-1]
+    match = re.search(r"test_([a-z]+(?:_[a-z]+)*)_(\d{3})_", name)
+    if not match:
+        return ""
+    return f"{match.group(1).upper().replace('_', '-')}-{match.group(2)}"
+
+
 def pytest_addoption(parser):
     parser.addoption("--headless", action="store_true", help="Run browser headless")
 
@@ -67,6 +75,12 @@ def driver(request):
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
+    options.add_experimental_option(
+        "prefs",
+        {
+            "profile.default_content_setting_values.notifications": 2,
+        },
+    )
 
     if Config.BROWSER != "chrome":
         raise ValueError(f"Unsupported browser configured: {Config.BROWSER}")
@@ -124,7 +138,8 @@ def pytest_runtest_makereport(item, call):
     outcome = yield
     report = outcome.get_result()
 
-    if report.when != "call":
+    # Keep reports focused on actionable evidence: capture only failed tests.
+    if report.when != "call" or not report.failed:
         return
 
     browser = item.funcargs.get("driver")
@@ -134,13 +149,18 @@ def pytest_runtest_makereport(item, call):
     screenshot_dir = Path(__file__).resolve().parent / "screenshots"
     screenshot_dir.mkdir(exist_ok=True)
     test_name = re.sub(r"[^A-Za-z0-9_.-]+", "_", item.nodeid).strip("_")
+    case_id = _extract_case_id(item.nodeid)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    result_label = "passed" if report.passed else "failed"
-    screenshot_path = screenshot_dir / f"{test_name}_{result_label}_{timestamp}.png"
+    result_label = "failed"
+    screenshot_prefix = f"{case_id}_{test_name}" if case_id else test_name
+    screenshot_path = screenshot_dir / f"{screenshot_prefix}_{result_label}_{timestamp}.png"
 
     try:
         browser.save_screenshot(str(screenshot_path))
-        print(f"[Screenshot] {screenshot_path}")
+        if case_id:
+            print(f"[Screenshot] [{case_id}] {screenshot_path}")
+        else:
+            print(f"[Screenshot] {screenshot_path}")
 
         pytest_html = item.config.pluginmanager.getplugin("html")
         if pytest_html is not None:

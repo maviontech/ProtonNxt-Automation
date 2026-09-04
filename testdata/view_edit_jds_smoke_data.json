@@ -1,0 +1,43 @@
+{
+  "module": "View/Edit JDs Smoke",
+  "page_path": "/view_edit_jds/",
+  "seed_jd": {
+    "title_prefix": "View Edit JD Smoke AUTO",
+    "jd_spoc_name": "Rahul Sharma",
+    "jd_spoc_email": "qa.automation@example.com",
+    "jd_description": "View Edit JDs smoke seed.\nPython and Django role.\nUsed to verify list, search, view, edit and share actions.",
+    "must_have_skills": "Python, Django, REST API",
+    "good_to_have_skills": "AWS, Docker",
+    "budget_ctc": "15 LPA",
+    "experience_required": "3-5 years",
+    "education_required": "Bachelor's in Computer Science",
+    "location": "Pune / Hybrid",
+    "no_of_positions": 2,
+    "jd_status": "active",
+    "company_search": "",
+    "expected_company": "",
+    "company_candidates": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "smoke_cases": {
+    "VEJD-SMK-002": {
+      "expected_headers_any": [
+        "JD",
+        "Summary",
+        "Status",
+        "Company"
+      ]
+    },
+    "VEJD-SMK-005": {
+      "invalid_query": "INVALID_JD_999_AUTO"
+    },
+    "VEJD-SMK-009": {
+      "updated_location_suffix": "Updated"
+    }
+  }
+}

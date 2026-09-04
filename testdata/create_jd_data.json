@@ -1,0 +1,92 @@
+{
+  "module": "Create JD",
+  "page_path": "/jds/",
+  "unique_title_prefix": "Create JD Sanity AUTO",
+  "company_search": "",
+  "expected_company": "",
+  "company_candidates": [
+    "",
+    "",
+    "",
+    "",
+    ""
+  ],
+  "test_cases": {
+    "CJD-SAN-003": {
+      "jd_summary": "Senior Python Developer"
+    },
+    "CJD-SAN-005": {
+      "jd_spoc_name": "Rahul Sharma"
+    },
+    "CJD-SAN-006": {
+      "jd_spoc_email": "spoc@example.com"
+    },
+    "CJD-SAN-007": {
+      "jd_description": "Senior Python Developer\n\nResponsibilities:\n- Build Django applications\n- Develop REST APIs\n\nRequirements:\n- Python\n- Django\n- REST API"
+    },
+    "CJD-SAN-008": {
+      "jd_description": "Python developer with Django experience",
+      "format": "bold",
+      "expected_markup": "strong"
+    },
+    "CJD-SAN-009": {
+      "jd_description": "Senior Python Developer\nResponsibilities:\n- Build APIs\nRequirements:\n- Python\n- Django",
+      "retained_keyword": "Python"
+    },
+    "CJD-SAN-010": {
+      "must_have_skills": "Python, Django, REST API, MySQL"
+    },
+    "CJD-SAN-011": {
+      "good_to_have_skills": "Docker, Redis, AWS"
+    },
+    "CJD-SAN-012": {
+      "budget_ctc": "10-15 LPA"
+    },
+    "CJD-SAN-013": {
+      "experience_required": "3-5 years"
+    },
+    "CJD-SAN-014": {
+      "education_required": "Bachelor's in Computer Science"
+    },
+    "CJD-SAN-015": {
+      "location": "Pune / Remote"
+    },
+    "CJD-SAN-016": {
+      "no_of_positions": 2
+    },
+    "CJD-SAN-018": {
+      "jd_status": "active"
+    },
+    "CJD-SAN-019": {
+      "jd_description": "Minimum valid JD content for sanity automation.\nPython backend role.\nREST API experience required.",
+      "must_have_skills": "Python, REST API",
+      "budget_ctc": "10 LPA",
+      "location": "Pune",
+      "no_of_positions": 1,
+      "jd_status": "active"
+    },
+    "CJD-SAN-020": {
+      "jd_spoc_name": "Rahul Sharma",
+      "jd_spoc_email": "spoc@example.com",
+      "jd_description": "Senior Python Developer\n\nResponsibilities:\n- Build Django applications\n- Develop REST APIs\n- Optimize database queries\n\nRequirements:\n- Python\n- Django\n- REST API",
+      "must_have_skills": "Python, Django, REST API, PostgreSQL",
+      "good_to_have_skills": "AWS, Docker, Redis",
+      "budget_ctc": "12-18 LPA",
+      "experience_required": "4-6 years",
+      "education_required": "Bachelor's in Computer Science",
+      "location": "Pune / Hybrid",
+      "no_of_positions": 2,
+      "jd_status": "active"
+    },
+    "CJD-SAN-022": {
+      "jd_spoc_name": "Rahul Sharma",
+      "jd_spoc_email": "invalid-email",
+      "jd_description": "Email validation JD content.\nTesting invalid SPOC email handling.",
+      "must_have_skills": "Python, REST API",
+      "budget_ctc": "10 LPA",
+      "location": "Pune",
+      "no_of_positions": 1,
+      "jd_status": "active"
+    }
+  }
+}

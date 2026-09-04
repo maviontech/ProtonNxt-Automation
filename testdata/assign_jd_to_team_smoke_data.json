@@ -1,0 +1,66 @@
+{
+  "module": "Assign JD to Team Smoke",
+  "page_paths": [
+    "/assign_jd_page/",
+    "/assign_jd/"
+  ],
+  "smoke_cases": {
+    "SMK-AJD-001": {
+      "expected_sections": ["select_jd", "select_team", "recent_jd_assignments"]
+    },
+    "SMK-AJD-002": {
+      "jd_identifiers": ["JD", "Summary"]
+    },
+    "SMK-AJD-003": {
+      "team_identifier": "Team"
+    },
+    "SMK-AJD-004": {
+      "jd_search_query": "JD"
+    },
+    "SMK-AJD-005": {
+      "team_search_query": "Team"
+    },
+    "SMK-AJD-006": {
+      "jd_selection_query": "JD"
+    },
+    "SMK-AJD-007": {
+      "team_selection_query": "Team"
+    },
+    "SMK-AJD-008": {
+      "success_keywords": ["assigned successfully", "assignment completed", "assigned to team", "success"]
+    },
+    "SMK-AJD-009": {
+      "expected_recent_fields": ["JD", "Team"]
+    },
+    "SMK-AJD-010": {
+      "validation_keywords": ["select jd", "choose jd", "jd required"]
+    },
+    "SMK-AJD-011": {
+      "validation_keywords": ["select team", "choose team", "team required"]
+    },
+    "SMK-AJD-012": {
+      "validation_keywords": ["select jd", "select team", "required"]
+    },
+    "SMK-AJD-013": {
+      "jd_search_query": "JD",
+      "team_search_query": "Team"
+    },
+    "SMK-AJD-014": {
+      "expected_headers_any": ["JD ID", "Summary", "Positions", "Company Name", "Team Name"]
+    },
+    "SMK-AJD-015": {
+      "recent_search_query": "JD"
+    },
+    "SMK-AJD-016": {},
+    "SMK-AJD-017": {},
+    "SMK-AJD-018": {
+      "success_keywords": ["assigned successfully", "assignment completed", "assigned to team", "success"]
+    },
+    "SMK-AJD-019": {
+      "invalid_search_query": "XYZ-NOT-FOUND"
+    },
+    "SMK-AJD-020": {
+      "success_keywords": ["assigned successfully", "assignment completed", "assigned to team", "success"]
+    }
+  }
+}

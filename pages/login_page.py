@@ -1,6 +1,8 @@
 import time
 from urllib.parse import urlparse
 
+from selenium.common.exceptions import ElementClickInterceptedException
+from selenium.common.exceptions import StaleElementReferenceException
 from selenium.common.exceptions import TimeoutException
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
@@ -42,6 +44,12 @@ class LoginPage:
         By.XPATH,
         "//*[self::a or self::button][contains(translate(normalize-space(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'sign in')]",
     )
+    AUTHENTICATED_NAV_MARKERS = (
+        (By.ID, "sidebar"),
+        (By.CSS_SELECTOR, "a[href='/prelogout/']"),
+        (By.XPATH, "//*[contains(normalize-space(), 'Recruitment Tasks')]"),
+        (By.XPATH, "//*[contains(normalize-space(), 'Dashboard')]"),
+    )
 
     def __init__(self, driver, timeout=15):
         self.driver = driver
@@ -68,6 +76,16 @@ class LoginPage:
             return True
         except TimeoutException:
             return False
+
+    def _is_displayed_now(self, locator):
+        elements = self.driver.find_elements(*locator)
+        for element in elements:
+            try:
+                if element.is_displayed():
+                    return True
+            except Exception:
+                continue
+        return False
 
     def is_login_page_displayed(self):
         return self._is_visible(self.LOGIN_FORM)
@@ -164,7 +182,7 @@ class LoginPage:
         return text.lower() in self.driver.current_url.lower()
 
     def is_authenticated_destination_displayed(self):
-        return self.is_dashboard_displayed() or not self.is_authentication_screen_displayed()
+        return self.wait_for_authenticated_destination(timeout=25)
 
     def _masked_value(self, value):
         return "*" * len(value) if value else "(empty)"
@@ -212,7 +230,15 @@ class LoginPage:
 
     def submit(self):
         self._pause(Config.LOGIN_STEP_DELAY)
-        self._clickable(self.LOGIN_BUTTON).click()
+        current_url = self.driver.current_url
+        login_form = self._visible(self.LOGIN_FORM)
+        button = self._clickable(self.LOGIN_BUTTON)
+        try:
+            button.click()
+        except ElementClickInterceptedException:
+            self.driver.execute_script("arguments[0].click();", button)
+
+        self._wait_for_post_submit_transition(login_form, current_url)
 
     def login(self, company_code, username, password, remember_me=None):
         self.fill_login_form(
@@ -222,25 +248,55 @@ class LoginPage:
             remember_me=remember_me,
         )
         self.submit()
+        self.wait_for_authenticated_destination(timeout=25)
 
     def submit_login_without_changes(self):
         self.submit()
 
     def is_dashboard_displayed(self):
-        return self._is_visible(self.DASHBOARD_SIDEBAR)
+        return any(self._is_displayed_now(locator) for locator in self.AUTHENTICATED_NAV_MARKERS)
 
     def is_authentication_screen_displayed(self):
         page_source = self.driver.page_source.lower()
         current_url = self.driver.current_url.lower()
         current_path = self.current_path().lower()
         return (
-            self.is_login_page_displayed()
+            self._is_displayed_now(self.LOGIN_FORM)
             or current_path in ("", "/", "/login", "/login/", "/logout", "/logout/")
             or current_url.endswith("/logout/")
             or "logged out" in page_source
             or "sign in" in page_source
             or "login" in page_source
         )
+
+    def wait_for_authenticated_destination(self, timeout=25):
+        def authenticated(_):
+            return self.is_dashboard_displayed() or not self.is_authentication_screen_displayed()
+
+        try:
+            WebDriverWait(self.driver, timeout).until(authenticated)
+            return True
+        except TimeoutException:
+            return False
+
+    def _wait_for_post_submit_transition(self, login_form, previous_url, timeout=12):
+        def transitioned(_):
+            if self.driver.current_url != previous_url:
+                return True
+            if self.is_dashboard_displayed():
+                return True
+            if self._is_displayed_now(self.ERROR_MESSAGE):
+                return True
+            try:
+                return EC.staleness_of(login_form)(self.driver)
+            except StaleElementReferenceException:
+                return True
+
+        try:
+            WebDriverWait(self.driver, timeout).until(transitioned)
+        except TimeoutException:
+            return False
+        return True
 
     def is_invalid_login_message_displayed(self):
         return self._is_visible(self.ERROR_MESSAGE)

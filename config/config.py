@@ -67,8 +67,13 @@ class Config:
     MANAGE_MEMBERS_TESTDATA = _load_testdata("manage_members_data.json")
     MANAGE_MEMBERS_SMOKE_TESTDATA = _load_testdata("manage_members_smoke_data.json")
     CREATE_TEAM_TESTDATA = _load_testdata("create_team_data.json")
+    CREATE_JD_TESTDATA = _load_testdata("create_jd_data.json")
     CREATE_TEAM_SMOKE_TESTDATA = _load_testdata("create_team_smoke_data.json")
     CREATE_JD_SMOKE_TESTDATA = _load_testdata("create_jd_smoke_data.json")
+    ASSIGN_JD_TO_TEAM_SMOKE_TESTDATA = _load_testdata("assign_jd_to_team_smoke_data.json")
+    ASSIGN_JD_TO_TEAM_SANITY_TESTDATA = _load_testdata("assign_jd_to_team_sanity_data.json")
+    VIEW_EDIT_JDS_SMOKE_TESTDATA = _load_testdata("view_edit_jds_smoke_data.json")
+    VIEW_JD_SANITY_TESTDATA = _load_testdata("view_jd_sanity_data.json")
     VALID_LOGIN = LOGIN_TESTDATA.get("valid_login", {})
     LOCK_TEST_LOGIN = LOGIN_TESTDATA.get("lock_test_login", {})
 

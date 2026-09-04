@@ -1,0 +1,21 @@
+{
+  "module": "Assign JD to Team Sanity",
+  "page_paths": ["/assign_jd_page/", "/assign_jd/"],
+  "sanity_cases": {
+    "SAN-AJD-001": {"expected_sections": ["assignment details", "recent jd assignments"]},
+    "SAN-AJD-002": {"jd_selection_query": "JD"},
+    "SAN-AJD-003": {"jd_search_query": "JD"},
+    "SAN-AJD-004": {"team_selection_query": "Team"},
+    "SAN-AJD-005": {"team_search_query": "Team"},
+    "SAN-AJD-006": {},
+    "SAN-AJD-007": {"success_keywords": ["assigned successfully", "assignment completed", "assigned to team", "success"]},
+    "SAN-AJD-008": {},
+    "SAN-AJD-009": {"validation_subject": "jd"},
+    "SAN-AJD-010": {"validation_subject": "team"},
+    "SAN-AJD-011": {"validation_subject": "both"},
+    "SAN-AJD-012": {"jd_search_query": "JD", "team_search_query": "Team"},
+    "SAN-AJD-013": {"recent_search_query": "JD"},
+    "SAN-AJD-014": {},
+    "SAN-AJD-015": {"jd_search_query": "JD", "team_search_query": "Team"}
+  }
+}

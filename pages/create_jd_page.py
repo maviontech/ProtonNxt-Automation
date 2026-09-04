@@ -36,6 +36,8 @@ class CreateJDPage:
     JD_SPOC_EMAIL_INPUT = (By.ID, "jd_spoc_email")
     JD_DESCRIPTION_TEXTAREA = (By.ID, "jd_description")
     JD_DESCRIPTION_EDITOR = (By.CSS_SELECTOR, "#jd_description_editor .ql-editor")
+    JD_DESCRIPTION_TOOLBAR = (By.CSS_SELECTOR, "#jd_description_editor .ql-toolbar")
+    JD_DESCRIPTION_BOLD_BUTTON = (By.CSS_SELECTOR, "#jd_description_editor .ql-bold")
     FORMAT_PASTED_TEXT_BUTTON = (By.ID, "formatTextBtn")
     MUST_HAVE_SKILLS_TEXTAREA = (By.ID, "must_have_skills")
     GOOD_TO_HAVE_SKILLS_TEXTAREA = (By.ID, "good_to_have_skills")
@@ -43,6 +45,7 @@ class CreateJDPage:
     EXPERIENCE_REQUIRED_INPUT = (By.ID, "experience_required")
     EDUCATION_REQUIRED_INPUT = (By.ID, "education_required")
     LOCATION_INPUT = (By.ID, "location")
+    CLOSURE_DATE_INPUT = (By.ID, "closure_date")
     NO_OF_POSITIONS_INPUT = (By.ID, "no_of_positions")
     JD_STATUS_SELECT = (By.ID, "jd_status")
     SUBMIT_BUTTON = (
@@ -57,6 +60,11 @@ class CreateJDPage:
     UNWORKED_JDS_TABLE = (By.ID, "unworked-jds-table")
     UNWORKED_JDS_BODY = (By.ID, "unworked-jds-tbody")
     EDIT_BUTTON = (By.ID, "jd-edit-btn")
+    EDIT_SAVE_BUTTON = (
+        By.XPATH,
+        "//*[contains(@class,'modal') or contains(@class,'dialog')]"
+        "//*[self::button or @role='button'][@id='jd-save-btn' or normalize-space()='Save']",
+    )
     DETAILS_MODAL = (
         By.XPATH,
         "//*[contains(@class,'modal') or contains(@class,'dialog')][.//*[normalize-space()='Job Description']]",
@@ -129,6 +137,16 @@ class CreateJDPage:
             """,
             element,
         )
+
+    def _normalize_text(self, value):
+        if value is None:
+            return ""
+        return " ".join(str(value).split()).strip()
+
+    def _normalize_newlines(self, value):
+        if value is None:
+            return ""
+        return str(value).replace("\r\n", "\n").replace("\r", "\n").strip()
 
     def current_path(self):
         return urlparse(self.driver.current_url).path
@@ -225,8 +243,12 @@ class CreateJDPage:
         if editor is not None:
             self._dispatch_input_events(editor)
         self._dispatch_input_events(backing_field)
-        expected_value = (value or "").strip()
-        self.wait.until(lambda _: self.get_description_value().strip() == expected_value)
+        expected_value = self._normalize_text(value)
+        self.wait.until(
+            lambda _: expected_value in self._normalize_text(self.get_description_value())
+            if expected_value
+            else self._normalize_text(self.get_description_value()) == ""
+        )
 
     def get_description_value(self):
         raw_value = self._field("jd_description").get_attribute("value") or ""
@@ -235,6 +257,72 @@ class CreateJDPage:
         if self._is_visible(self.JD_DESCRIPTION_EDITOR):
             return self._visible(self.JD_DESCRIPTION_EDITOR).text.strip()
         return raw_value
+
+    def get_description_html(self):
+        if self._is_visible(self.JD_DESCRIPTION_EDITOR):
+            return self.driver.execute_script("return arguments[0].innerHTML || '';", self._visible(self.JD_DESCRIPTION_EDITOR))
+        return ""
+
+    def _select_all_description_text(self):
+        editor = self._visible(self.JD_DESCRIPTION_EDITOR)
+        try:
+            editor.click()
+            editor.send_keys(Keys.CONTROL, "a")
+        except Exception:
+            self.driver.execute_script(
+                """
+                const editor = arguments[0];
+                const selection = window.getSelection();
+                const range = document.createRange();
+                range.selectNodeContents(editor);
+                selection.removeAllRanges();
+                selection.addRange(range);
+                """,
+                editor,
+            )
+        return editor
+
+    def has_description_content(self, expected_text=""):
+        current_value = self._normalize_text(self.get_description_value())
+        if not current_value:
+            return False
+        expected_value = self._normalize_text(expected_text)
+        if not expected_value:
+            return True
+        expected_words = [word for word in expected_value.split() if len(word) > 2]
+        if not expected_words:
+            return True
+        matched_words = sum(1 for word in expected_words if word in current_value)
+        return matched_words >= max(1, min(3, len(expected_words)))
+
+    def apply_basic_description_formatting(self, format_name="bold"):
+        if format_name != "bold":
+            raise ValueError(f"Unsupported description format: {format_name}")
+
+        editor = self._select_all_description_text()
+        toolbar_button = self._clickable(self.JD_DESCRIPTION_BOLD_BUTTON)
+        before_html = self.get_description_html().lower()
+
+        try:
+            toolbar_button.click()
+        except ElementClickInterceptedException:
+            self.driver.execute_script("arguments[0].click();", toolbar_button)
+
+        def bold_applied(_):
+            html_value = self.get_description_html().lower()
+            button_classes = (toolbar_button.get_attribute("class") or "").lower()
+            aria_pressed = (toolbar_button.get_attribute("aria-pressed") or "").lower()
+            return (
+                html_value != before_html
+                or "<strong" in html_value
+                or "<b>" in html_value
+                or 'font-weight: bold' in html_value
+                or "ql-active" in button_classes
+                or aria_pressed == "true"
+            )
+
+        self.wait.until(bold_applied)
+        editor.click()
 
     def format_pasted_text(self):
         try:
@@ -268,6 +356,25 @@ class CreateJDPage:
 
     def enter_location(self, value):
         self._clear_and_type(self.LOCATION_INPUT, value)
+
+    def enter_closure_date(self, value):
+        field = self._visible(self.CLOSURE_DATE_INPUT)
+        self.driver.execute_script(
+            "arguments[0].value = arguments[1]; arguments[0].dispatchEvent(new Event('input', {bubbles: true})); arguments[0].dispatchEvent(new Event('change', {bubbles: true}));",
+            field,
+            value,
+        )
+
+    def enable_edit_mode(self):
+        self._clickable(self.EDIT_BUTTON).click()
+        self.wait.until(lambda _: self._visible(self.LOCATION_INPUT).is_enabled())
+
+    def save_edit(self):
+        self._clickable(self.EDIT_SAVE_BUTTON).click()
+        alert = WebDriverWait(self.driver, 8).until(EC.alert_is_present())
+        message = alert.text.strip()
+        alert.accept()
+        return message
 
     def enter_positions(self, value):
         self._clear_and_type(self.NO_OF_POSITIONS_INPUT, str(value))
@@ -444,6 +551,24 @@ class CreateJDPage:
     def get_company_id(self):
         return self.driver.find_element(*self.COMPANY_ID_INPUT).get_attribute("value") or ""
 
+    def clear_company(self):
+        company_input = self._visible(self.COMPANY_SEARCH_INPUT)
+        company_input.click()
+        company_input.send_keys(Keys.CONTROL, "a")
+        company_input.send_keys(Keys.BACKSPACE)
+        company_id = self.driver.find_element(*self.COMPANY_ID_INPUT)
+        self.driver.execute_script(
+            """
+            arguments[0].value = '';
+            arguments[0].dispatchEvent(new Event('input', { bubbles: true }));
+            arguments[0].dispatchEvent(new Event('change', { bubbles: true }));
+            arguments[1].value = '';
+            arguments[1].dispatchEvent(new Event('change', { bubbles: true }));
+            """,
+            company_input,
+            company_id,
+        )
+
     def fill_form(
         self,
         jd_summary="",
@@ -485,11 +610,34 @@ class CreateJDPage:
         if jd_summary:
             self.wait.until(lambda _: self.get_field_value("jd_summary").strip() == jd_summary.strip())
         if jd_description:
-            self.wait.until(lambda _: self.get_description_value().strip() == jd_description.strip())
+            self.wait.until(lambda _: self.has_description_content(jd_description))
 
     def submit_with_data(self, **jd_data):
+        jd_summary = (jd_data.get("jd_summary") or "").strip()
         self.fill_form(**jd_data)
         self.submit()
+        self.wait_for_submission_success(jd_summary=jd_summary)
+
+    def wait_for_submission_success(self, jd_summary="", timeout=20):
+        expected_summary = jd_summary.strip().lower()
+
+        def submission_completed(_):
+            current_path = self.current_path().rstrip("/")
+            if current_path.endswith(self.VIEW_EDIT_PATH.rstrip("/")):
+                return True
+
+            feedback = self.get_success_feedback().lower()
+            if any(keyword in feedback for keyword in ("created successfully", "jd created", "job description created successfully")):
+                return True
+
+            if expected_summary and self._is_visible(self.JD_SUMMARY_INPUT):
+                current_value = (self._field("jd_summary").get_attribute("value") or "").strip().lower()
+                if current_value != expected_summary:
+                    return True
+
+            return False
+
+        WebDriverWait(self.driver, timeout).until(submission_completed)
 
     def get_alert_texts(self):
         for attempt in range(3):
@@ -537,22 +685,45 @@ class CreateJDPage:
         search_input.send_keys(Keys.TAB)
         self._clickable(self.JD_SEARCH_BUTTON).click()
 
+    def count_listed_jds(self, title):
+        title_lower = title.lower()
+        rows = self.driver.find_elements(
+            By.XPATH,
+            f"//tr[contains(translate(normalize-space(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"{title_lower}\")]",
+        )
+        return sum(
+            1
+            for row in rows
+            if self._element_contains_title(row, title_lower)
+        )
+
+    @staticmethod
+    def _element_contains_title(element, title_lower):
+        try:
+            return element.is_displayed() and title_lower in element.text.lower()
+        except StaleElementReferenceException:
+            return False
+
     def is_jd_listed(self, title):
         title_lower = title.lower()
         rows = self.driver.find_elements(
             By.XPATH,
-            f"//*[contains(translate(normalize-space(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"{title_lower}\")]",
+            f"//tr[contains(translate(normalize-space(.), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), \"{title_lower}\")]",
         )
         for row in rows:
             try:
-                if row.is_displayed() and title_lower in row.text.lower():
+                if self._element_contains_title(row, title_lower):
                     return True
             except StaleElementReferenceException:
                 continue
         return False
 
-    def wait_for_jd_to_be_listed(self, title, timeout=12):
-        WebDriverWait(self.driver, timeout).until(lambda _: self.is_jd_listed(title))
+    def wait_for_jd_to_be_listed(self, title, timeout=25):
+        def jd_is_listed(_):
+            self.search_jd(title)
+            return self.is_jd_listed(title)
+
+        WebDriverWait(self.driver, timeout).until(jd_is_listed)
 
     def open_matching_jd_for_edit(self, title, timeout=8):
         self.search_jd(title)

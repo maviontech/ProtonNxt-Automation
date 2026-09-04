@@ -1,0 +1,16 @@
+{
+  "seed_jd": {
+    "title_prefix": "View JD Sanity AUTO",
+    "jd_spoc_name": "Rahul Sharma",
+    "jd_spoc_email": "qa.automation@example.com",
+    "jd_description": "View JD sanity seed.\nPython and Django role.\nThis multiline content validates the read-only View JD modal.",
+    "must_have_skills": "Python, Django, REST API",
+    "good_to_have_skills": "AWS, Docker",
+    "budget_ctc": "15 LPA",
+    "experience_required": "3-5 years",
+    "education_required": "Bachelor's in Computer Science",
+    "location": "Pune / Hybrid",
+    "no_of_positions": 2,
+    "jd_status": "active"
+  }
+}

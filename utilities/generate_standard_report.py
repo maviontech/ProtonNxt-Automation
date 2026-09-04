@@ -9,8 +9,12 @@ from pathlib import Path
 REPORT_NAME_MAP = {
     "login": "Login",
     "add_member": "Add Member",
+    "create_jd": "Create JD",
+    "assign_jd_to_team": "Assign JD to Team",
     "create_team": "Create Team",
     "manage_members": "Manage Members",
+    "view_edit_jds": "View/Edit JDs",
+    "view_jd": "View JD",
 }
 
 
@@ -45,6 +49,26 @@ REPORT_CONFIG = {
         "suite_type": "Smoke",
         "suite_doc": Path("tests/smoke/CREATE_TEAM_SMOKE_TESTSUITE.md"),
     },
+    "create_jd_smoke_report.html": {
+        "module": "create_jd",
+        "suite_type": "Smoke",
+        "suite_doc": Path("tests/smoke/CREATE_JD_SMOKE_TESTSUITE.md"),
+    },
+    "create_jd_report.html": {
+        "module": "create_jd",
+        "suite_type": "Sanity",
+        "suite_doc": Path("tests/sanity/CREATE_JD_TESTSUITE.md"),
+    },
+    "assign_jd_to_team_report.html": {
+        "module": "assign_jd_to_team",
+        "suite_type": "Sanity",
+        "suite_doc": Path("tests/sanity/ASSIGN_JD_TO_TEAM_TESTSUITE.md"),
+    },
+    "assign_jd_to_team_smoke_report.html": {
+        "module": "assign_jd_to_team",
+        "suite_type": "Smoke",
+        "suite_doc": Path("tests/smoke/ASSIGN_JD_TO_TEAM_SMOKE_TESTSUITE.md"),
+    },
     "manage_members_report.html": {
         "module": "manage_members",
         "suite_type": "Sanity",
@@ -54,6 +78,16 @@ REPORT_CONFIG = {
         "module": "manage_members",
         "suite_type": "Smoke",
         "suite_doc": Path("tests/smoke/MANAGE_MEMBERS_SMOKE_TESTSUITE.md"),
+    },
+    "view_edit_jds_smoke_report.html": {
+        "module": "view_edit_jds",
+        "suite_type": "Smoke",
+        "suite_doc": Path("tests/smoke/VIEW_EDIT_JDS_SMOKE_TESTSUITE.md"),
+    },
+    "view_jd_report.html": {
+        "module": "view_jd",
+        "suite_type": "Sanity",
+        "suite_doc": Path("tests/sanity/VIEW_JD_TESTSUITE.md"),
     },
 }
 
@@ -67,7 +101,7 @@ def _load_suite_scenarios(path):
         return {}
 
     content = _read_text(path)
-    matches = re.findall(r"^##\s+([A-Z]{3}-\d{3})\s+-\s+(.+)$", content, re.MULTILINE)
+    matches = re.findall(r"^##\s+([A-Z]+(?:-[A-Z]+)*-\d{3})\s+-\s+(.+)$", content, re.MULTILINE)
     return {case_id: title.strip() for case_id, title in matches}
 
 
@@ -90,9 +124,9 @@ def _extract_generated_at(raw_html):
 
 def _case_id_from_test_id(test_id):
     name = test_id.split("::")[-1]
-    match = re.search(r"test_([a-z]+)_(\d{3})_", name)
+    match = re.search(r"test_([a-z]+(?:_[a-z]+)*)_(\d{3})_", name)
     if match:
-        return f"{match.group(1).upper()}-{match.group(2)}"
+        return f"{match.group(1).upper().replace('_', '-')}-{match.group(2)}"
     return name.upper()
 
 
@@ -165,6 +199,7 @@ def _render_report(module_name, suite_type, generated_at, rows):
     passed = sum(1 for row in rows if row["result"] == "PASSED")
     failed = sum(1 for row in rows if row["result"] == "FAILED")
     skipped = sum(1 for row in rows if row["result"] == "SKIPPED")
+    xfailed = sum(1 for row in rows if row["result"] == "XFAILED")
     errors = sum(1 for row in rows if row["result"] == "ERROR")
     duration = _format_duration(sum(row["seconds"] for row in rows))
     pass_rate = (passed / total * 100) if total else 0
@@ -173,11 +208,14 @@ def _render_report(module_name, suite_type, generated_at, rows):
 
     if overall_status == "FAILED":
         summary_text = f"The {suite_type.lower()} suite executed successfully, but {failed + errors} out of {total} test cases failed."
+    elif xfailed:
+        summary_text = f"The {suite_type.lower()} suite executed successfully with {passed} passed test cases and {xfailed} expected failure."
     else:
         summary_text = f"The {suite_type.lower()} suite executed successfully and all {total} test cases passed."
 
     failed_rows = [row for row in rows if row["result"] in {"FAILED", "ERROR"}]
     passed_rows = [row for row in rows if row["result"] == "PASSED"]
+    xfailed_rows = [row for row in rows if row["result"] == "XFAILED"]
 
     execution_date = generated_at.split()[0]
     title = f"{module_name} Automation Test Report"
@@ -221,6 +259,22 @@ def _render_report(module_name, suite_type, generated_at, rows):
             "<td colspan=\"3\" class=\"fail\">No passed test cases.</td>"
             "</tr>"
         )
+
+    xfailed_table = ""
+    if xfailed_rows:
+        entries = []
+        for row in xfailed_rows:
+            entries.append(
+                "<tr>"
+                f"<td>{html.escape(row['case_id'])}</td>"
+                f"<td>{html.escape(row['scenario'])}</td>"
+                "<td>Known environment limitation</td>"
+                "<td class=\"fail\">XFAILED</td>"
+                "</tr>"
+            )
+        xfailed_table = "\n".join(entries)
+    else:
+        xfailed_table = "<tr><td colspan=\"4\">No expected failures.</td></tr>"
 
     failure_details = ""
     if failed_rows:
@@ -282,6 +336,7 @@ th {{ background: #f1f3f5; }}
 <div class="card pass">Passed<b>{passed}</b></div>
 <div class="card fail">Failed<b>{failed}</b></div>
 <div class="card">Skipped<b>{skipped}</b></div>
+<div class="card">Expected Failures<b>{xfailed}</b></div>
 <div class="card">Errors<b>{errors}</b></div>
 <div class="card">Duration<b>{html.escape(duration)}</b></div>
 <div class="card">Pass Rate<b>{pass_rate:.2f}%</b></div>
@@ -299,11 +354,17 @@ th {{ background: #f1f3f5; }}
 {passed_table}
 </table>
 
+<h2>Expected Failures</h2>
+<table>
+<tr><th>Test ID</th><th>Test Scenario</th><th>Actual Result</th><th>Status</th></tr>
+{xfailed_table}
+</table>
+
 <h2>Failure Details</h2>
 {failure_details}
 
 <h2>Conclusion</h2>
-<p>Out of {total} executed {suite_type.lower()} test cases, <strong class="pass">{passed} passed</strong> and <strong class="fail">{failed + errors} failed</strong>, resulting in a <strong>{pass_rate:.2f}% pass rate</strong>. The {html.escape(suite_label)} suite is currently marked as <strong class="{status_class}">{overall_status}</strong>.</p>
+<p>Out of {total} executed {suite_type.lower()} test cases, <strong class="pass">{passed} passed</strong>, <strong>{xfailed} expected failure(s)</strong>, and <strong class="fail">{failed + errors} failed</strong>, resulting in a <strong>{pass_rate:.2f}% pass rate</strong>. The {html.escape(suite_label)} suite is currently marked as <strong class="{status_class}">{overall_status}</strong>.</p>
 
 <div class="footer">
 Generated from {html.escape(suite_label)} Automation Test Execution - {html.escape(generated_at)}
