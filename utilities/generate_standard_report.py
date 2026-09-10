@@ -7,6 +7,9 @@ from pathlib import Path
 
 
 REPORT_NAME_MAP = {
+    "recruiter_assignment_view": "Recruiter Assignment View",
+    "employee_view": "Employee View",
+    "public_submissions": "Public Submissions",
     "login": "Login",
     "add_member": "Add Member",
     "create_jd": "Create JD",
@@ -19,6 +22,26 @@ REPORT_NAME_MAP = {
 
 
 REPORT_CONFIG = {
+    "recruiter_assignment_view_sanity_report.html": {
+        "module": "recruiter_assignment_view",
+        "suite_type": "Sanity",
+        "suite_doc": Path("tests/sanity/RECRUITER_ASSIGNMENT_VIEW_SANITY_TESTSUITE.md"),
+    },
+    "employee_view_smoke_report.html": {
+        "module": "employee_view",
+        "suite_type": "Smoke",
+        "suite_doc": Path("tests/smoke/EMPLOYEE_VIEW_SMOKE_TESTSUITE.md"),
+    },
+    "public_submissions_sanity_report.html": {
+        "module": "public_submissions",
+        "suite_type": "Sanity",
+        "suite_doc": Path("tests/sanity/PUBLIC_SUBMISSIONS_SANITY_TESTSUITE.md"),
+    },
+    "public_submissions_smoke_report.html": {
+        "module": "public_submissions",
+        "suite_type": "Smoke",
+        "suite_doc": Path("tests/smoke/PUBLIC_SUBMISSIONS_SMOKE_TESTSUITE.md"),
+    },
     "login_report.html": {
         "module": "login",
         "suite_type": "Sanity",
@@ -96,8 +119,25 @@ def _read_text(path):
     return path.read_text(encoding="utf-8")
 
 
+def _config_for_report(report_path):
+    """Return explicit configuration when available, otherwise infer a standard one.
+
+    The fallback lets new smoke/sanity modules use the shared report layout without
+    requiring a code change here before their first execution.
+    """
+    configured = REPORT_CONFIG.get(report_path.name)
+    if configured is not None:
+        return configured
+
+    stem = report_path.stem
+    suite_type = "Smoke" if "smoke" in stem.casefold() else "Sanity" if "sanity" in stem.casefold() else "Test"
+    module = re.sub(r"_(smoke|sanity)?_?report$", "", stem, flags=re.IGNORECASE)
+    module = module or stem
+    return {"module": module, "suite_type": suite_type, "suite_doc": None}
+
+
 def _load_suite_scenarios(path):
-    if not path.exists():
+    if path is None or not path.exists():
         return {}
 
     content = _read_text(path)
@@ -376,9 +416,7 @@ Generated from {html.escape(suite_label)} Automation Test Execution - {html.esca
 
 
 def convert_report(report_path):
-    config = REPORT_CONFIG.get(report_path.name)
-    if config is None:
-        raise ValueError(f"No standard report mapping found for {report_path.name}")
+    config = _config_for_report(report_path)
 
     data, raw_html = _extract_report_data(report_path)
     scenario_map = _load_suite_scenarios(config["suite_doc"])

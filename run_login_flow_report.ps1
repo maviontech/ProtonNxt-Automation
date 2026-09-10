@@ -1,5 +1,7 @@
- $smokeReport = "reports/login_smoke_report.html"
- $sanityReport = "reports/login_report.html"
+ $smokeReport = "reports/smoke/login_smoke_report.html"
+New-Item -ItemType Directory -Path 'reports/smoke' -Force | Out-Null
+ $sanityReport = "reports/sanity/login_report.html"
+New-Item -ItemType Directory -Path 'reports/sanity' -Force | Out-Null
 
 Write-Host "Step 1/2: Running Login smoke suite..."
 python -m pytest tests/smoke/test_login_smoke.py --headless -v --tb=short --html=$smokeReport --self-contained-html

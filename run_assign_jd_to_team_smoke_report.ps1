@@ -1,4 +1,5 @@
-$smokeReport = "reports/assign_jd_to_team_smoke_report.html"
+$smokeReport = "reports/smoke/assign_jd_to_team_smoke_report.html"
+New-Item -ItemType Directory -Path 'reports/smoke' -Force | Out-Null
 
 Write-Host "Running Assign JD to Team smoke suite..."
 python -m pytest tests/smoke/test_assign_jd_to_team_smoke.py --headless -v --tb=short --html=$smokeReport --self-contained-html

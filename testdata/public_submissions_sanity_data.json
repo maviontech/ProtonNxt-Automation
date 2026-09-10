@@ -1,0 +1,13 @@
+{
+  "admin_path": "/public-submissions/admin/",
+  "default_page_size": 15,
+  "alternate_page_size": 25,
+  "candidate": {
+    "name_prefix": "Sanity PS Candidate",
+    "email_domain": "example.com",
+    "skills": "Python,Django"
+  },
+  "expected_headers": ["Name", "Email", "Phone", "Skills", "Submitted", "Status", "Action"],
+  "valid_statuses": ["Pool", "Assigned", "Dropped", "AI Match Found", "Partially Matched", "No Match Found"],
+  "ai_timeout_seconds": 120
+}

@@ -1,4 +1,5 @@
-$sanityReport = "reports/create_team_report.html"
+$sanityReport = "reports/sanity/create_team_report.html"
+New-Item -ItemType Directory -Path 'reports/sanity' -Force | Out-Null
 
 Write-Host "Running Create Team sanity suite..."
 python -m pytest tests/sanity/test_create_team_sanity.py --headless -v --tb=short --html=$sanityReport --self-contained-html

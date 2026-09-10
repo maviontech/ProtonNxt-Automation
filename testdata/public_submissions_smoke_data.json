@@ -1,0 +1,11 @@
+{
+  "admin_path": "/public-submissions/admin/",
+  "candidate": {
+    "name_prefix": "Test Candidate",
+    "email_prefix": "test.candidate",
+    "email_domain": "example.com",
+    "skills": "Python, Django"
+  },
+  "page_size": 15,
+  "expected_headers": ["Name", "Email", "Phone", "Skills", "Submitted", "Status", "Action"]
+}

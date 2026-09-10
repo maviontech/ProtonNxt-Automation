@@ -1,0 +1,31 @@
+{
+  "member": {
+    "name": "Admin User",
+    "email": "admin@mavion.com"
+  },
+  "second_member": {
+    "name": "Ava Sharma",
+    "email": "smoke.atm002.1787738711206@example.com"
+  },
+  "assigned_member": {
+    "name": "Admin User",
+    "email": "admin@mavion.com",
+    "expected_jds": [
+      {
+        "jd_id": "JD221",
+        "summary": "View JD Sanity AUTO 63fbe36e",
+        "status": "Active",
+        "team": "Automation DOM Check 8810ee59",
+        "company": "JD Seed Customer d1d01e73"
+      }
+    ],
+    "expected_details": null,
+    "expected_teams": null
+  },
+  "unassigned_member": {
+    "name": "Ava Sharma",
+    "email": "smoke.atm002.1787738711206@example.com"
+  },
+  "no_match_query": "zzznomatch987",
+  "multiple_match_query": ".com"
+}

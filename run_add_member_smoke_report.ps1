@@ -1,4 +1,5 @@
-$smokeReport = "reports/add_member_smoke_report.html"
+$smokeReport = "reports/smoke/add_member_smoke_report.html"
+New-Item -ItemType Directory -Path 'reports/smoke' -Force | Out-Null
 
 Write-Host "Running Add Member smoke suite..."
 python -m pytest tests/smoke/test_add_member_smoke.py --headless -v --tb=short --html=$smokeReport --self-contained-html
