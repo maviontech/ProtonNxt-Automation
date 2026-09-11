@@ -7,6 +7,7 @@ from pathlib import Path
 
 
 REPORT_NAME_MAP = {
+    "talent_intake_matching": "Talent Intake & Matching",
     "recruiter_assignment_view": "Recruiter Assignment View",
     "employee_view": "Employee View",
     "public_submissions": "Public Submissions",
@@ -172,7 +173,7 @@ def _case_id_from_test_id(test_id):
 
 def _fallback_scenario(test_id):
     name = test_id.split("::")[-1]
-    name = re.sub(r"^test_[a-z]+_\d{3}_", "", name)
+    name = re.sub(r"^test_[a-z]+(?:_[a-z]+)*_\d{3}_", "", name)
     return name.replace("_", " ").strip().capitalize()
 
 

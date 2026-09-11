@@ -1,0 +1,8 @@
+{
+  "jd_query": "JD221",
+  "alternate_jd_query": "JD220",
+  "existing_candidate_query": "sanity.ps.5eb33a08f940@example.com",
+  "empty_jd_query": "JD219",
+  "processing_timeout_seconds": 120,
+  "expected_headers": ["FILE NAME", "NAME", "CONTACT NO", "EMAIL", "TOT. EXP (YEARS)", "STATUS", "ACTIONS"]
+}

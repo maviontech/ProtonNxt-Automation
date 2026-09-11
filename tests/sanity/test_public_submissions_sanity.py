@@ -331,11 +331,31 @@ def test_san_ps_020_select_all_visible(admin, create_candidate):
 
 def test_san_ps_021_sidebar_navigation(admin):
     driver = admin.driver
-    driver.find_element(By.CSS_SELECTOR, 'a[href="/view_edit_jds/"]').click()
+
+    def click_visible_sidebar_link(path):
+        """Click the displayed sidebar item, not a hidden duplicate navigation link."""
+        selector = f'a[href="{path}"]'
+        link = admin.wait.until(
+            lambda d: next(
+                (
+                    item for item in d.find_elements(By.CSS_SELECTOR, selector)
+                    if item.is_displayed() and item.is_enabled()
+                ),
+                False,
+            )
+        )
+        driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", link)
+        admin.wait.until(lambda _: link.is_displayed() and link.is_enabled())
+        link.click()
+
+    click_visible_sidebar_link('/view_edit_jds/')
     admin.wait.until(lambda d: '/view_edit_jds/' in d.current_url)
-    driver.find_element(By.CSS_SELECTOR, f'a[href="{DATA["admin_path"]}"]').click()
+    click_visible_sidebar_link(DATA['admin_path'])
     admin.wait_ready()
-    link = driver.find_element(By.CSS_SELECTOR, f'a[href="{DATA["admin_path"]}"]')
+    link = next(
+        item for item in driver.find_elements(By.CSS_SELECTOR, f'a[href="{DATA["admin_path"]}"]')
+        if item.is_displayed()
+    )
     assert link.get_attribute('aria-current') == 'page'
     assert driver.current_url.rstrip('/').endswith(DATA['admin_path'].rstrip('/'))
 
