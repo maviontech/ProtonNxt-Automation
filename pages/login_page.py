@@ -13,7 +13,8 @@ from config.config import Config
 
 
 class LoginPage:
-    LOGIN_FORM = (By.ID, "login-form")
+    # Support both the current camelCase template ID and the legacy kebab-case ID.
+    LOGIN_FORM = (By.CSS_SELECTOR, "#loginForm, #login-form")
     COMPANY_CODE_INPUT = (By.ID, "company_code")
     USERNAME_INPUT = (By.ID, "username")
     PASSWORD_INPUT = (By.ID, "password")

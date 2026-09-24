@@ -7,6 +7,8 @@ from pathlib import Path
 
 
 REPORT_NAME_MAP = {
+    "calendar_settings": "Calendar & MavionMeet Settings",
+    "bulk_scheduling": "Bulk Scheduling",
     "talent_intake_matching": "Talent Intake & Matching",
     "recruiter_assignment_view": "Recruiter Assignment View",
     "employee_view": "Employee View",
@@ -23,6 +25,21 @@ REPORT_NAME_MAP = {
 
 
 REPORT_CONFIG = {
+    "calendar_settings_smoke_report.html": {
+        "module": "calendar_settings",
+        "suite_type": "Smoke",
+        "suite_doc": Path("tests/smoke/CALENDAR_SETTINGS_SMOKE_TESTSUITE.md"),
+    },
+    "bulk_scheduling_smoke_report.html": {
+        "module": "bulk_scheduling",
+        "suite_type": "Smoke",
+        "suite_doc": Path("tests/smoke/BULK_SCHEDULING_SMOKE_TESTSUITE.md"),
+    },
+    "bulk_scheduling_sanity_report.html": {
+        "module": "bulk_scheduling",
+        "suite_type": "Sanity",
+        "suite_doc": Path("tests/sanity/BULK_SCHEDULING_SANITY_TESTSUITE.md"),
+    },
     "recruiter_assignment_view_sanity_report.html": {
         "module": "recruiter_assignment_view",
         "suite_type": "Sanity",

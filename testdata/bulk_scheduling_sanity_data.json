@@ -1,0 +1,15 @@
+{
+  "candidate_jd_query": "JD221",
+  "alternate_jd_query": "JD220",
+  "empty_jd_query": "JD219",
+  "interview_level": "l1",
+  "duration_minutes": 60,
+  "meeting_source": "mavionmeet",
+  "interviewer": {
+    "name": "Admin User",
+    "email": "kulkarnimohini146@gmail.com"
+  },
+  "future_day_offset": 35,
+  "interview_times": ["09:30", "11:00", "13:30", "16:00"],
+  "calendar_path": "/interview/calendar/"
+}
